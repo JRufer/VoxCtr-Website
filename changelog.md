@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.3.2] - 2026-06-17
+
+fix: another pass at build script.
+
+---
+
 ## [v0.2.3.1] - 2026-06-17
 
 fix" windows build script
