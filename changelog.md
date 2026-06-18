@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.3.3] - 2026-06-18
+
+Merge pull request #48 from JRufer/claude/serene-tesla-qdfow5
+fix(packaging): bundle voxctrl-overlay sidecar + update tray icon on main thread
+
+---
+
 ## [v0.2.3.2] - 2026-06-17
 
 fix: another pass at build script.
