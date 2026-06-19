@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.6] - 2026-06-19
+
+Merge pull request #54 from JRufer/claude/serene-tesla-qdfow5
+ci: stop bundling host graphics/Wayland libs in the AppImage (fixes overlay-once)
+
+---
+
 ## [v0.2.4] - 2026-06-19
 
 Merge pull request #52 from JRufer/claude/serene-tesla-qdfow5
