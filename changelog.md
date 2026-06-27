@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.7] - 2026-06-27
+
+Merge pull request #59 from JRufer/claude/quirky-lamport-0mcsk2
+Replace Kokoro TTS engine with Pocket-TTS
+
+---
+
 ## [v0.2.6] - 2026-06-19
 
 Merge pull request #54 from JRufer/claude/serene-tesla-qdfow5
