@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link is-active" href="/voxctrl/">Overview</a>
@@ -113,7 +113,7 @@
           <div class="transcript">
             <span class="lbl">▸ raw input</span>
             <span class="raw" id="rawT">um, schedule a team sync, uh, for thursday at three p m</span>
-            <span class="arrow">↳ post-processing &nbsp;·&nbsp; strip_fillers + ollama_polish</span>
+            <span class="arrow">↳ post-processing &nbsp;·&nbsp; remove_fillers + openai_rewrite</span>
             <span class="lbl">▸ delivered</span>
             <span class="out" id="outT">Schedule a team sync for Thursday at 3:00 PM<span class="caret"></span></span>
           </div>
@@ -133,16 +133,16 @@
   <div class="shell">
     <div class="glyph-rail">
       <div class="track">
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper.cpp</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
-        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
+        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>openai-api</b></span>
         <span class="item">∗ <b>vulkan</b></span><span class="item">▣ <b>cuda</b></span>
         <span class="item">⌬ <b>wayland</b></span><span class="item">◇ <b>x11</b></span>
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper.cpp</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
-        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
+        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>openai-api</b></span>
         <span class="item">∗ <b>vulkan</b></span><span class="item">▣ <b>cuda</b></span>
         <span class="item">⌬ <b>wayland</b></span><span class="item">◇ <b>x11</b></span>
       </div>
@@ -238,6 +238,8 @@
               <div class="row"><span>Hold</span><code>super+space</code></div>
               <div class="row"><span>Toggle</span><code>ctrl+super+space</code></div>
               <div class="row"><span>Double-tap</span><code>alt</code></div>
+              <div class="row"><span>Double-tap+hold</span><code>super</code></div>
+              <div class="row"><span>Chord</span><code>ctrl+super → z</code></div>
             </div>
             <div class="pl-block">
               <div class="head"><b>↯ CAPTURE</b><span>vad</span></div>
@@ -268,7 +270,7 @@
               <div class="row"><span>Snippets</span><code>"my email" ⟶ …</code></div>
               <div class="row"><span>Spoken punct</span><code>"period" ⟶ .</code></div>
               <div class="row"><span>Code mode</span><code>get_user.name</code></div>
-              <div class="row"><span>Ollama rewrite</span><code>llama3.2:1b</code></div>
+              <div class="row"><span>LLM rewrite</span><code>OpenAI-compatible API</code></div>
             </div>
           </div>
 
@@ -296,7 +298,7 @@
             <div class="pl-block" style="background: linear-gradient(180deg, rgba(34,212,239,0.06), transparent);">
               <div class="head"><b>↺ RESPOND</b><span>loop</span></div>
               <div class="row"><span>FIFO listener</span><code>response_pipe</code></div>
-              <div class="row"><span>TTS engine</span><code>piper / espeak</code></div>
+              <div class="row"><span>TTS engine</span><code>piper / pocket-tts / espeak-ng</code></div>
             </div>
           </div>
         </div>
@@ -318,11 +320,11 @@
           <span class="corner">01</span>
           <span class="glyph">⌁</span>
           <h3 class="h-card">Global hotkeys</h3>
-          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Hold, toggle,
-            or double-tap modes — each gesture mapped to a different output.</p>
+          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Five gesture
+            types — hold, toggle, double-tap, double-tap &amp; hold, and chord — each mapped to a different output.</p>
           <ul>
-            <li>Conflict detection at bind time</li>
-            <li>Bare-key bindings &amp; modifier chords</li>
+            <li>Superset shadowing prevents combo conflicts</li>
+            <li>Bare-key bindings &amp; chord (base-keys + subkey) combos</li>
             <li>Per-binding gesture settings</li>
           </ul>
         </div>
@@ -342,13 +344,13 @@
         <div class="card">
           <span class="corner">03</span>
           <span class="glyph">∷</span>
-          <h3 class="h-card">AT-SPI2 native injection</h3>
-          <p class="desc">Insert text directly into widgets via the accessibility bus. No keystroke simulation, no
-            modifier conflicts, no IME headaches.</p>
+          <h3 class="h-card">AT-SPI2 context priming</h3>
+          <p class="desc">Reads the surrounding text from the focused widget via the accessibility bus and feeds it to
+            Whisper as an initial prompt — improving continuity with what's already on screen.</p>
           <ul>
-            <li>Reads 300 chars of context as initial_prompt</li>
+            <li>Surrounding text primes the Whisper initial prompt</li>
             <li>Auto code-mode for terminals &amp; IDEs</li>
-            <li>Fallback chain: wtype → portal → xdotool</li>
+            <li>Injection fallback chain: wtype → xdotool → clipboard+paste</li>
           </ul>
         </div>
         <div class="card">
@@ -369,24 +371,26 @@
           <span class="corner">05</span>
           <span class="glyph">⊕</span>
           <h3 class="h-card">Neural TTS &amp; loopback</h3>
-          <p class="desc">Piper (ONNX neural voices) for high-quality on-device speech, with espeak-ng as fallback.
-            Per-target response_pipe FIFOs let agents stream answers back as audio.</p>
+          <p class="desc">Piper (ONNX neural voices) or Pocket-TTS (Rust voice-cloning) for high-quality on-device
+            speech, with espeak-ng as a lightweight fallback. Per-target response_pipe FIFOs let agents stream answers
+            back as audio.</p>
           <ul>
-            <li>~11 English voices, in-app downloads</li>
+            <li>~11 Piper voices + 5 Pocket-TTS cloned voices, in-app downloads</li>
             <li>Configurable global stop key</li>
-            <li>Teal response overlay</li>
+            <li>"SYSTEM RESPONDING" speaking-pill overlay</li>
           </ul>
         </div>
         <div class="card">
           <span class="corner">06</span>
           <span class="glyph">⌬</span>
-          <h3 class="h-card">Four built-in overlay styles</h3>
-          <p class="desc">Blue Wave, Voice Card, Waveform, and Pulse — all Svelte 5 components bundled with the app.
-            Select in Settings → Visual tab. Routing badge included.</p>
+          <h3 class="h-card">Eight built-in overlay styles</h3>
+          <p class="desc">Ocean Wave, Voice Card, Waveform, Pulse Ring, Mono Bars, Neon Spectrum, Retro Terminal, and
+            Analog VU — rendered by a native Slint helper process. Select in Settings → Visual tab. Active-target
+            indicator included on every style.</p>
           <ul>
-            <li>Blue Wave (default) — animated ocean waves, reacts to audio level</li>
-            <li>Voice Card — 45-bar spectrum · Waveform — 48-bar oscilloscope</li>
-            <li>Pulse — pill-shaped with animated rings</li>
+            <li>Ocean Wave (default) — tide-pool waves that rise with the mic level</li>
+            <li>Voice Card — 20×6 LED VU matrix · Waveform — scrolling oscilloscope trace</li>
+            <li>Pulse Ring, Mono Bars, Neon Spectrum, Retro Terminal, Analog VU</li>
           </ul>
         </div>
       </div>
@@ -429,8 +433,8 @@
                 style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Reads surrounding text as Whisper
                 initial prompt via AT-SPI2</span></li>
             <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
-                style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Direct insertion via AT-SPI2 — no
-                keypress simulation</span></li>
+                style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Delivery via wtype/xdotool keystroke
+                injection, with clipboard+paste fallback</span></li>
           </ul>
         </div>
         <div class="code">
@@ -588,7 +592,7 @@
           <div class="outs">
             <div class="out">
               <b>→ editor</b>
-              <span class="badge">strip_fillers</span><span class="badge">ollama</span>
+              <span class="badge">remove_fillers</span><span class="badge">openai_rewrite</span>
               <div style="margin-top:6px; color: var(--txt-0);">Schedule a meeting for Friday at 3:00 PM.</div>
             </div>
             <div class="out">
@@ -598,7 +602,7 @@
             </div>
             <div class="out">
               <b>→ journal.md</b>
-              <span class="badge">ollama_only</span>
+              <span class="badge">openai_rewrite only</span>
               <div style="margin-top:6px; color: var(--txt-0);">- Schedule meeting · Fri 3pm</div>
             </div>
           </div>
@@ -666,19 +670,19 @@
   <section class="section section-bordered">
     <div class="shell">
       <span class="eyebrow fade-up">// overlays</span>
-      <h2 class="h-section fade-up">Four overlay styles built-in. Switch instantly from Settings.</h2>
+      <h2 class="h-section fade-up">Eight overlay styles built-in. Switch instantly from Settings.</h2>
       <p class="lead fade-up" style="margin-bottom: 28px;">
-        Every overlay shows the routing indicator badge — so you always know where your speech is going,
+        Every overlay shows an active-target indicator — so you always know where your speech is going,
         before you say a word.
       </p>
 
       <div class="overlays-row fade-up">
         <div class="overlay-card featured">
-          <div class="frame"><img src="/voxctrl/assets/ocean_wave.png" alt="Blue Wave overlay (default)" /></div>
+          <div class="frame"><img src="/voxctrl/assets/ocean_wave.png" alt="Ocean Wave overlay (default)" /></div>
           <div class="body">
             <div>
-              <div class="name">Blue Wave</div>
-              <div class="meta">default · animated waves</div>
+              <div class="name">Ocean Wave</div>
+              <div class="meta">default · tide-pool waves</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⊟</span>
           </div>
@@ -688,7 +692,7 @@
           <div class="body">
             <div>
               <div class="name">Voice Card</div>
-              <div class="meta">bar-graph spectrum</div>
+              <div class="meta">20×6 LED VU matrix</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⊟</span>
           </div>
@@ -698,19 +702,59 @@
           <div class="body">
             <div>
               <div class="name">Waveform</div>
-              <div class="meta">48-bar oscilloscope</div>
+              <div class="meta">scrolling oscilloscope</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⌇</span>
           </div>
         </div>
         <div class="overlay-card">
-          <div class="frame"><img src="/voxctrl/assets/pulse_ring.png" alt="Pulse overlay" /></div>
+          <div class="frame"><img src="/voxctrl/assets/pulse_ring.png" alt="Pulse Ring overlay" /></div>
           <div class="body">
             <div>
-              <div class="name">Pulse</div>
-              <div class="meta">animated rings · pill</div>
+              <div class="name">Pulse Ring</div>
+              <div class="meta">sonar sweep · target lock</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">◌</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame"><img src="/voxctrl/assets/pulse_ring.png" alt="Mono Bars overlay" /></div>
+          <div class="body">
+            <div>
+              <div class="name">Mono Bars</div>
+              <div class="meta">black &amp; white 5-bar meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▥</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame"><img src="/voxctrl/assets/voice_card.png" alt="Neon Spectrum overlay" /></div>
+          <div class="body">
+            <div>
+              <div class="name">Neon Spectrum</div>
+              <div class="meta">16-band equalizer</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▦</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame"><img src="/voxctrl/assets/waveform.png" alt="Retro Terminal overlay" /></div>
+          <div class="body">
+            <div>
+              <div class="name">Retro Terminal</div>
+              <div class="meta">DOS-blue ASCII meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▸</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame"><img src="/voxctrl/assets/ocean_wave.png" alt="Analog VU overlay" /></div>
+          <div class="body">
+            <div>
+              <div class="name">Analog VU</div>
+              <div class="meta">vintage needle meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">◔</span>
           </div>
         </div>
       </div>
@@ -746,7 +790,9 @@
               <td class="mono">whisper.cpp</td>
               <td class="mono">CUDA fp16</td>
               <td><span class="pill pill-good">near-instant</span></td>
-              <td class="muted" style="font-size:12.5px;">Auto-detected via <code
+              <td class="muted" style="font-size:12.5px;">Requires a CUDA-enabled build (<code
+                  style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,0.06);padding:1px 5px;border-radius:3px;">--features cuda</code>);
+                auto-detected via <code
                   style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,0.06);padding:1px 5px;border-radius:3px;">nvidia-smi</code>
               </td>
             </tr>
@@ -954,7 +1000,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

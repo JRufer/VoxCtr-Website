@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -99,63 +99,82 @@
         <tbody>
           <tr>
             <td>inject</td>
-            <td>AT-SPI2 → wtype → xdotool</td>
+            <td>wtype (Wayland) → xdotool (X11) → clipboard+Ctrl+V fallback; PowerShell clipboard paste on Windows
+            </td>
             <td>Default dictation into focused window</td>
           </tr>
           <tr>
             <td>clipboard</td>
-            <td>wl-copy / xclip (Linux), Win32 clipboard (Windows)</td>
+            <td>System clipboard write only — no paste</td>
             <td>Copy for manual paste</td>
           </tr>
           <tr>
-            <td>exec</td>
-            <td>subprocess, shell=false</td>
-            <td>CLI agents, one-shot commands</td>
-          </tr>
-          <tr>
-            <td>pipe</td>
-            <td>FIFO write O_NONBLOCK</td>
-            <td>Persistent agent processes</td>
-          </tr>
-          <tr>
-            <td>socket</td>
-            <td>TCP / Unix domain</td>
-            <td>Remote or containerised agents</td>
-          </tr>
-          <tr>
             <td>file</td>
-            <td>append + optional timestamp</td>
+            <td>append or write, optional prefix &amp; ISO timestamp</td>
             <td>Voice journal, meeting notes</td>
           </tr>
           <tr>
-            <td>dbus</td>
-            <td>signal emission</td>
-            <td>Waybar, Rofi, desktop automation</td>
+            <td>exec</td>
+            <td>shell command, transcript passed as argument</td>
+            <td>CLI agents, one-shot commands</td>
           </tr>
           <tr>
             <td>http</td>
-            <td>HTTP POST request</td>
+            <td>HTTP POST, JSON body <code>{"text": "..."}</code></td>
             <td>Webhooks, REST APIs</td>
           </tr>
           <tr>
             <td>webhook</td>
-            <td>HTTP POST with custom headers</td>
+            <td>HTTP POST signed with HMAC-SHA256 (<code>X-VoxCtrl-Signature</code> header)</td>
             <td>Authenticated webhooks, n8n, Zapier</td>
+          </tr>
+          <tr>
+            <td>socket</td>
+            <td>Unix domain socket or TCP, newline-terminated</td>
+            <td>Remote or containerised agents</td>
+          </tr>
+          <tr>
+            <td>pipe</td>
+            <td>Named FIFO write</td>
+            <td>Persistent agent processes</td>
+          </tr>
+          <tr>
+            <td>dbus</td>
+            <td><code>text_injected</code> signal on <code>ai.voxctrl.Dictation</code></td>
+            <td>Waybar, Rofi, desktop automation</td>
+          </tr>
+          <tr>
+            <td>mcp</td>
+            <td>Enqueues response to a pending <code>transcribe_voice</code> MCP tool call</td>
+            <td>MCP client integrations</td>
+          </tr>
+          <tr>
+            <td>speak</td>
+            <td>Local TTS playback, no MCP/server required</td>
+            <td>Hands-free voice replies</td>
           </tr>
         </tbody>
       </table>
 
-      <h2>Post-processing pipeline</h2>
-      <p>The following steps are applied in order after Whisper transcription, configurable per target:</p>
-      <ol>
-        <li>Filler word removal (um, uh, hmm, er, ah, ugh, mhm)</li>
-        <li>Spoken punctuation ("period" → ., "comma" → ,, 20+ mappings)</li>
-        <li>Auto-format lists (first/second/third ordinals → numbered list)</li>
-        <li>Snippet expansion (custom shorthand → full text)</li>
-        <li>Custom vocabulary fuzzy correction (Levenshtein)</li>
-        <li>Code mode (camelCase, spoken operators)</li>
-        <li>Optional Ollama LLM rewrite (clean/formal/casual/bullet/concise/custom)</li>
-      </ol>
+      <h2>Per-target processing</h2>
+      <p>Each target's <code>[target.processing]</code> block can override the global post-processing settings.
+        All fields are optional (<code>null</code> inherits the global config):</p>
+      <ul>
+        <li><code>remove_fillers</code> — strip filler words (um, uh, hmm, er, ah, ugh, mhm)</li>
+        <li><code>spoken_punctuation</code> — convert spoken punctuation ("period" → ., "comma" → ,)</li>
+        <li><code>auto_format_lists</code> — convert spoken ordinals into a numbered list</li>
+        <li><code>apply_snippets</code> — expand custom shorthand snippets into full text</li>
+        <li><code>code_mode</code> — camelCase / spoken-operator formatting for dictating code</li>
+        <li><code>quiet_mode</code> — suppress overlay/sound feedback for this target</li>
+        <li><code>atspi_context</code> — use AT-SPI2 to read surrounding context for this target</li>
+        <li><code>noise_suppression</code> — enable/disable noise suppression for this target</li>
+      </ul>
+      <div class="note"><span class="icon">ⓘ</span> LLM rewriting (<code>openai_enabled</code>,
+        <code>openai_model</code>, <code>openai_mode</code>, <code>openai_prompt</code>,
+        <code>openai_system_prompt</code>) is configured per hotkey <em>binding</em> in
+        <code>bindings.toml</code>, not per target — so the same target can be reached by different bindings using
+        different rewrite styles. The model is served over the OpenAI API; legacy <code>ollama_*</code> field names
+        are still accepted as aliases.</div>
       <div class="note warn"><span class="icon">!</span> Agent targets (<code>exec</code>, <code>pipe</code>,
         <code>socket</code>) should almost always use <code>remove_fillers = true</code> and
         <code>spoken_punctuation = false</code>. Rewriting alters command semantics.
@@ -163,22 +182,30 @@
 
       <h2>Common patterns</h2>
       <h3>Agent command pipe</h3>
-      <p>Send voice commands to a CLI agent via FIFO. Strip fillers so the agent gets clean input. Use
-        <code>response_pipe</code> to stream replies back as TTS.
+      <p>Send voice commands to a CLI agent via FIFO (<code>pipe_path</code>). Strip fillers so the agent gets clean
+        input. Use <code>response_pipe</code> to stream replies back as TTS.
       </p>
       <h3>Voice journal</h3>
-      <p>Append timestamped entries to a markdown file. Use Ollama to format each utterance as a concise note.</p>
+      <p>Append timestamped entries to a markdown file with <code>delivery = "file"</code>, <code>file_prefix</code>,
+        and <code>file_timestamp = true</code>. Apply an LLM rewrite on the triggering binding to format each
+        utterance as a concise note.</p>
       <h3>Shell command execution</h3>
-      <p>Use <code>delivery = "exec"</code> with a command template. The transcript is passed as a literal argument with
-        <code>shell=false</code> to prevent injection.
+      <p>Use <code>delivery = "exec"</code> with a <code>command</code> template. The transcript is passed as an
+        argument to the command.
       </p>
-      <h3>TCP socket to remote agent</h3>
-      <p>Forward transcripts over TCP for distributed or containerised setups. Set <code>socket_host</code> and
-        <code>socket_port</code>; voxctrl opens a connection per utterance.
+      <h3>TCP or Unix socket to remote agent</h3>
+      <p>Forward transcripts to a socket for distributed or containerised setups. Set <code>socket_host</code> and
+        <code>socket_port</code> for TCP, or <code>socket_unix</code> for a Unix domain socket.
       </p>
       <h3>HTTP / webhook delivery</h3>
-      <p>Use <code>delivery = "http"</code> for a simple POST, or <code>delivery = "webhook"</code> to attach custom
-        headers (e.g. <code>Authorization: Bearer …</code>). The transcript is sent as the request body.</p>
+      <p>Use <code>delivery = "http"</code> for a simple JSON POST (<code>http_url</code>, <code>http_method</code>,
+        optional <code>http_headers</code> / <code>http_json_template</code>), or <code>delivery = "webhook"</code>
+        with <code>webhook_url</code> and <code>webhook_secret</code> to attach an HMAC-SHA256
+        <code>X-VoxCtrl-Signature</code> header for authenticated endpoints.</p>
+      <h3>Multi-target routing</h3>
+      <p>A binding's <code>target_ids</code> array can list multiple targets — voxctrl delivers to each
+        sequentially in order after a single recording session (e.g. inject into the focused window, then log to a
+        file).</p>
 
       <h2>Config file locations</h2>
       <ul>
@@ -237,7 +264,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

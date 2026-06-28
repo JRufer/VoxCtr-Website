@@ -31,7 +31,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -85,43 +85,129 @@
       <h1>Architecture</h1>
       <p class="lede">What's inside the app, and how the parts talk to each other.</p>
 
-      <h2>Source layout</h2>
+      <h2>High-level design</h2>
+      <p>VoxCtrl is a <strong>Tauri 2</strong> application: a compiled Rust backend that spawns a WebView window
+        running a Svelte 5 SPA (styled with Tailwind CSS 4, bundled with Vite 5). The two halves communicate over
+        Tauri's IPC bridge — invoke commands from the frontend, event emitters from the backend.</p>
+      <p>The backend also spawns a native overlay helper process (<code>voxctrl-overlay</code>, built with Slint)
+        that renders the always-on-top, click-through recording HUD. The backend streams newline-delimited JSON
+        (<code>status</code> / <code>position</code> / <code>shutdown</code>) to the helper's stdin; the helper runs
+        its own 16ms animation loop, drives spring-based load/unload animations, and builds the per-style visualizer
+        geometry (oscilloscope trace, radar sweep, ocean waves, VU LED matrix) on every tick.</p>
+
+      <h2>Crate workspace</h2>
+      <p>The backend is a Cargo workspace of focused, single-responsibility crates:</p>
       <ul>
-        <li><code>main.py</code> — application entry point</li>
-        <li><code>input_listener.py</code> — evdev hotkey engine (hold / toggle / double-tap / TTS stop)</li>
-        <li><code>audio_recorder.py</code> — PyAudio capture + VU meter</li>
-        <li><code>inference_engine.py</code> — transcription + post-processing</li>
-        <li><code>text_injector.py</code> — text delivery thread + routing dispatch</li>
-        <li><code>llm_postprocessor.py</code> — Ollama integration</li>
-        <li><code>tts_engine.py</code> — Piper/espeak engine, voice catalog, downloads</li>
-        <li><code>tts_responder.py</code> — ResponseListener: FIFO → TTSEngine</li>
-        <li><code>mcp_server.py</code> — MCP JSON-RPC server (Unix socket)</li>
-        <li><code>atspi_context.py</code> — focus tracking, context reading, injection</li>
+        <li><code>src-tauri/</code> — Tauri app entry + IPC command handlers (<code>lib.rs</code> is the pipeline
+          coordinator, <code>commands.rs</code> holds the <code>#[command]</code> handlers, <code>state.rs</code>
+          holds the shared <code>AppState</code>)</li>
+        <li><code>voxctrl-config</code> — <code>AppConfig</code> struct, TOML/JSON persistence</li>
+        <li><code>voxctrl-audio</code> — microphone capture, resampling, VU meter</li>
+        <li><code>voxctrl-hotkeys</code> — global key listener (evdev / Win32)</li>
+        <li><code>voxctrl-inference</code> — Whisper transcription + post-processing</li>
+        <li><code>voxctrl-routing</code> — output target + hotkey binding data models, router</li>
+        <li><code>voxctrl-inject</code> — text injection via wtype/xdotool/clipboard</li>
+        <li><code>voxctrl-tts</code> — Piper/Pocket-TTS/Espeak TTS engine</li>
+        <li><code>voxctrl-mcp</code> — MCP JSON-RPC server (Unix socket / named pipe)</li>
+        <li><code>voxctrl-dbus</code> — DBus service (Linux session bus)</li>
+        <li><code>voxctrl-llm</code> — OpenAI-compatible LLM HTTP client</li>
       </ul>
 
-      <h2>Threading model</h2>
-      <ul>
-        <li>One Qt main thread for UI</li>
-        <li>One audio thread for capture (~20–60ms callbacks)</li>
-        <li>One transcription worker per recording</li>
-        <li>One delivery thread per active target</li>
-        <li>One MCP accept thread + N short-lived per-connection threads</li>
-        <li>One ResponseListener daemon per target with <code>response_pipe</code></li>
-      </ul>
+      <h2>Data flow</h2>
+      <p>A hotkey press is picked up by <code>voxctrl-hotkeys</code> and sent over a <code>gesture_tx</code> channel
+        to the <code>lib.rs</code> coordinator, which starts the audio recorder and determines the target from the
+        binding. Audio chunks accumulate in a buffer until hotkey release or VAD-detected silence, at which point
+        the buffer is handed to <code>InferenceEngine.process()</code> in <code>voxctrl-inference</code>, which runs
+        (in order): noise gate (VAD), Whisper transcription, filler removal, spoken punctuation, auto-format lists,
+        snippet expansion, custom vocabulary fuzzy correction, code mode, a silence hallucination filter, and —
+        optionally, per target — an LLM rewrite via the OpenAI-compatible API.</p>
+      <p>The resulting text is sent to <code>OutputTargetRouter.route()</code> in <code>voxctrl-routing</code>, which
+        dispatches by delivery type: <code>inject</code> → <code>voxctrl-inject</code>, <code>clipboard</code> →
+        arboard, <code>file</code> → <code>tokio::fs</code>, <code>http</code>/<code>webhook</code> → reqwest,
+        <code>exec</code> → <code>std::process</code>, <code>socket</code> → <code>UnixStream</code>,
+        <code>dbus</code> → <code>voxctrl-dbus</code>, <code>mcp</code> → the MCP response queue, and
+        <code>pipe</code> → a named FIFO. A Tauri event then notifies the frontend (status tick, history update).</p>
 
-      <h2>Backend selection</h2>
-      <p>At startup, <code>BackendSelector</code> probes the system in this order:</p>
+      <h2>Concurrency model</h2>
+      <p>VoxCtrl uses Tokio for async I/O plus dedicated OS threads for latency-sensitive work:</p>
       <ul>
-        <li>nvidia-smi — if it returns devices, prefer faster-whisper</li>
-        <li>sysfs DRM vendor IDs (<code>/sys/class/drm/card*/device/vendor</code>) — detect AMD/Intel</li>
-        <li>vulkaninfo — confirm a Vulkan-capable device is present</li>
-        <li>If GPU detected but no CUDA libs, fall back to whisper.cpp</li>
-        <li>If no GPU at all, faster-whisper int8 on CPU</li>
+        <li>Main Tauri thread (OS thread) — window management, IPC dispatch</li>
+        <li>Audio capture (OS thread, cpal) — microphone streaming at hardware rate</li>
+        <li>Audio level emitter (Tokio task) — forwards RMS levels to the UI every ~50ms</li>
+        <li>Hotkey listener (OS thread) — evdev/Win32 event loop</li>
+        <li>Inference worker (OS thread) — blocking Whisper computation; the <code>WhisperState</code> (KV cache +
+          attention buffers) is allocated once at load and reused across all calls</li>
+        <li>Status ticker (Tokio task) — emits <code>status-tick</code> events every 250ms</li>
+        <li>Config watcher (Tokio task) — inotify/kqueue on the config files</li>
+        <li>MCP server (Tokio task) — Unix socket accept loop</li>
+        <li>DBus service (Tokio task) — session bus method handler</li>
+        <li>TTS FIFO watcher (Tokio task) — named pipe reader for TTS input</li>
       </ul>
+      <p>Shared state is an <code>Arc&lt;AppState&gt;</code>, using <code>AtomicBool</code>/<code>AtomicU32</code>
+        for hot-path flags and <code>Mutex</code> for heavier data (targets, history, TTS handle). Channels
+        (crossbeam/tokio) carry typed messages between stages: <code>audio_tx</code>/<code>audio_rx</code>
+        (<code>Vec&lt;f32&gt;</code> chunks), <code>inference_tx</code>/<code>inference_rx</code>
+        (<code>InferenceRequest</code>), <code>text_tx</code>/<code>text_rx</code> (<code>InferenceOutput</code>),
+        <code>audio_level_tx</code>/<code>level_rx</code> (<code>f32</code> RMS), and
+        <code>gesture_tx</code>/<code>gesture_rx</code> (<code>GestureEvent</code>), plus a
+        <code>hotkey_reloader</code> channel that pushes updated bindings to the listener thread for hot-reload.</p>
 
-      <h2>Test coverage</h2>
-      <p>280+ tests across DoubleTapMachine timing, all delivery types, TOML round-trips, voice catalog, MCP JSON-RPC
-        dispatch, BackendProtocol contract, AT-SPI2 focus tracking, and config validation.</p>
+      <h2>Frontend architecture</h2>
+      <p>The Svelte frontend is a single-page app with three logical "pages" rendered as separate Tauri windows:</p>
+      <ul>
+        <li><strong>/settings</strong> — Settings component, a sidebar with 9 tabs: General, Engine, Routing
+          (targets + bindings editor), Visual, Audio, TTS, Features, OpenAI API, and About</li>
+        <li><strong>/overlay</strong> — Overlay component, the web overlay layer; the on-screen HUD for built-in
+          styles is rendered by the native <code>voxctrl-overlay</code> helper. Styles include BlueWave (default —
+          "Ocean Wave" tide pool), VoiceCard ("Voice Card" VU LED matrix), Waveform (green-phosphor oscilloscope),
+          and Pulse ("Pulse Ring" sonar dial)</li>
+        <li><strong>/history</strong> — History component</li>
+      </ul>
+      <p>State management: <code>src/stores/config.ts</code> holds a reactive <code>AppConfig</code> with a
+        400ms-debounced auto-save via the <code>save_config</code> IPC command, and listens for
+        <code>config-changed</code> events. <code>src/stores/status.ts</code> tracks live state from
+        <code>status-tick</code> events plus derived stores (<code>recording</code>, <code>speaking</code>,
+        <code>wordCount</code>, <code>activeTargetLabel</code>).</p>
+
+      <h2>File locations</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Path</th>
+            <th>Contents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>~/.config/voxctrl/config.json</td>
+            <td>Main application config</td>
+          </tr>
+          <tr>
+            <td>~/.config/voxctrl/targets.toml</td>
+            <td>Output target definitions</td>
+          </tr>
+          <tr>
+            <td>~/.config/voxctrl/bindings.toml</td>
+            <td>Hotkey binding definitions</td>
+          </tr>
+          <tr>
+            <td>~/.local/share/voxctrl/models/</td>
+            <td>Downloaded Whisper GGUF models</td>
+          </tr>
+          <tr>
+            <td>~/.local/share/voxctrl/piper-voices/</td>
+            <td>Downloaded Piper voice packs</td>
+          </tr>
+          <tr>
+            <td>/tmp/voxctrl-mcp.sock</td>
+            <td>MCP Unix domain socket (Linux)</td>
+          </tr>
+          <tr>
+            <td>\\.\pipe\voxctrl-mcp</td>
+            <td>MCP named pipe (Windows)</td>
+          </tr>
+        </tbody>
+      </table>
 
       <div class="docs-foot">
         <a href="config.html"><small>← previous</small><span>Configuration</span></a>
@@ -170,7 +256,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
