@@ -258,6 +258,67 @@ npm run tauri build</pre>
         (<code>http://localhost:11434</code>) already points at a local Ollama instance. To use a remote provider
         instead, set the API URL to its base URL and provide an API key.</p>
 
+      <h2>Permissions setup (Linux)</h2>
+      <h3>Global hotkeys</h3>
+      <p>voxctrl uses evdev to listen for global keyboard events. Your user must be in the <code>input</code> group:</p>
+      <pre class="code-inline">sudo usermod -aG input $USER
+# Log out and back in
+
+# Verify:
+groups $USER | grep input</pre>
+
+      <h3>Wayland text injection</h3>
+      <p>For Wayland sessions, install <code>wtype</code>:</p>
+      <pre class="code-inline"># Ubuntu/Debian
+sudo apt install wtype
+
+# Arch
+sudo pacman -S wtype
+
+# Fedora
+sudo dnf install wtype</pre>
+
+      <h3>X11 text injection</h3>
+      <p>For X11 sessions, install <code>xdotool</code>:</p>
+      <pre class="code-inline"># Ubuntu/Debian
+sudo apt install xdotool
+
+# Arch
+sudo pacman -S xdotool</pre>
+
+      <h2>Troubleshooting</h2>
+      <h3>Hotkeys not working</h3>
+      <ul>
+        <li>Check you are in the <code>input</code> group: <code>groups | grep input</code></li>
+        <li>Log out and back in after being added to the group</li>
+        <li>On some distros, the udev rule path differs — the built-in installer handles this automatically</li>
+      </ul>
+      <h3>No audio devices found</h3>
+      <ul>
+        <li>Run <code>arecord -l</code> to verify your mic is recognized by ALSA</li>
+        <li>Check if PulseAudio/PipeWire is running: <code>pactl info</code></li>
+        <li>Try setting <code>audio.input_device_index</code> manually to a specific device index in <code>config.json</code></li>
+      </ul>
+      <h3>Text not injecting on Wayland</h3>
+      <ul>
+        <li>Verify <code>wtype</code> is installed: <code>which wtype</code></li>
+        <li>Some applications block synthetic input — clipboard fallback always works: use <code>delivery = "clipboard"</code></li>
+      </ul>
+      <h3>Whisper outputs wrong language</h3>
+      <ul>
+        <li>Set <code>engine.language</code> to your BCP-47 language code (e.g. <code>"de"</code>, <code>"fr"</code>, <code>"es"</code>) in <code>config.json</code></li>
+        <li>Use a larger model for better non-English accuracy</li>
+      </ul>
+      <h3>AppImage won't launch</h3>
+      <ul>
+        <li>Install FUSE: <code>sudo apt install fuse libfuse2</code></li>
+        <li>Or extract and run directly: <code>./VoxCtrl.AppImage --appimage-extract &amp;&amp; squashfs-root/AppRun</code></li>
+      </ul>
+      <h3>Crash logs</h3>
+      <p>If the application crashes or fails to start, check
+        <code>~/.local/share/voxctrl/startup_errors.log</code>. This file logs system configuration details and
+        errors only — it never records transcribed speech or LLM prompts. Attach it when opening GitHub issues.</p>
+
       <div class="docs-foot">
         <a href="quickstart.html"><small>← previous</small><span>Quickstart</span></a>
         <a href="concepts.html" style="text-align:right;"><small>next →</small><span>Core concepts</span></a>

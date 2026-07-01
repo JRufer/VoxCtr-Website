@@ -576,6 +576,21 @@
             <td>null</td>
             <td>LLM mode override for this hotkey (clean/formal/casual/bullet/concise/custom)</td>
           </tr>
+          <tr>
+            <td>openai_model</td>
+            <td>null</td>
+            <td>Model override for this hotkey (null = inherit global)</td>
+          </tr>
+          <tr>
+            <td>openai_prompt</td>
+            <td>null</td>
+            <td>User prompt template override for this hotkey; must contain <code>{text}</code> (null = inherit global)</td>
+          </tr>
+          <tr>
+            <td>openai_system_prompt</td>
+            <td>null</td>
+            <td>System prompt override for this hotkey (null = inherit global)</td>
+          </tr>
         </tbody>
       </table>
       <p>The per-hotkey field names were renamed from <code>ollama_*</code> to <code>openai_*</code>; the legacy

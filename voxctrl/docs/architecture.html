@@ -120,7 +120,7 @@
         the buffer is handed to <code>InferenceEngine.process()</code> in <code>voxctrl-inference</code>, which runs
         (in order): noise gate (VAD), Whisper transcription, filler removal, spoken punctuation, auto-format lists,
         snippet expansion, custom vocabulary fuzzy correction, code mode, a silence hallucination filter, and —
-        optionally, per target — an LLM rewrite via the OpenAI-compatible API.</p>
+        optionally, per binding — an LLM rewrite via the OpenAI-compatible API.</p>
       <p>The resulting text is sent to <code>OutputTargetRouter.route()</code> in <code>voxctrl-routing</code>, which
         dispatches by delivery type: <code>inject</code> → <code>voxctrl-inject</code>, <code>clipboard</code> →
         arboard, <code>file</code> → <code>tokio::fs</code>, <code>http</code>/<code>webhook</code> → reqwest,
@@ -158,9 +158,9 @@
         <li><strong>/settings</strong> — Settings component, a sidebar with 9 tabs: General, Engine, Routing
           (targets + bindings editor), Visual, Audio, TTS, Features, OpenAI API, and About</li>
         <li><strong>/overlay</strong> — Overlay component, the web overlay layer; the on-screen HUD for built-in
-          styles is rendered by the native <code>voxctrl-overlay</code> helper. Styles include BlueWave (default —
-          "Ocean Wave" tide pool), VoiceCard ("Voice Card" VU LED matrix), Waveform (green-phosphor oscilloscope),
-          and Pulse ("Pulse Ring" sonar dial)</li>
+          styles is rendered by the native <code>voxctrl-overlay</code> helper. The eight built-in styles are:
+          BlueWave/Ocean Wave (default), VoiceCard/Voice Card, Waveform, Pulse/Pulse Ring, MonoBars/Mono Bars,
+          Spectrum/Neon Spectrum, Terminal/Retro Terminal, and Vinyl/Analog VU</li>
         <li><strong>/history</strong> — History component</li>
       </ul>
       <p>State management: <code>src/stores/config.ts</code> holds a reactive <code>AppConfig</code> with a
