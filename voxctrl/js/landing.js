@@ -1,3 +1,24 @@
+/* ─────────── mobile nav (hamburger) ─────────── */
+(function () {
+  const toggle = document.querySelector('.nav-toggle');
+  if (!toggle) return;
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nav-backdrop';
+  document.body.appendChild(backdrop);
+  const close = () => {
+    document.body.classList.remove('nav-open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.addEventListener('click', () => {
+    const open = document.body.classList.toggle('nav-open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  backdrop.addEventListener('click', close);
+  document.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', close));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 760) close(); });
+})();
+
 /* ─────────── tabs ─────────── */
 document.querySelectorAll('#wfTabs .tab').forEach(t => {
   t.addEventListener('click', () => {

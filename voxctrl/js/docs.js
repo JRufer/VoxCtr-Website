@@ -1,5 +1,41 @@
 /* ─────────── activate docs layout ─────────── */
 document.querySelector('.docs-shell')?.classList.add('is-active');
+document.body.classList.add('is-docs');
+
+/* ─────────── mobile nav (hamburger → sidebar drawer) ─────────── */
+(function () {
+  const toggle = document.querySelector('.nav-toggle');
+  if (!toggle) return;
+
+  /* surface the top-level site links inside the drawer, since the top-bar
+     links collapse on mobile and the drawer is the docs navigation */
+  const side = document.querySelector('.docs-side');
+  if (side && !side.querySelector('.mobile-site-nav')) {
+    const g = document.createElement('div');
+    g.className = 'group mobile-site-nav';
+    g.innerHTML =
+      '<span class="h">voxctrl</span>' +
+      '<a class="item" href="/voxctrl/"><span class="glyph">⌂</span> Overview</a>' +
+      '<a class="item" href="https://github.com/JRufer/voxctrl" target="_blank" rel="noreferrer"><span class="glyph">★</span> GitHub</a>';
+    side.insertBefore(g, side.firstChild);
+  }
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nav-backdrop';
+  document.body.appendChild(backdrop);
+  const close = () => {
+    document.body.classList.remove('nav-open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.addEventListener('click', () => {
+    const open = document.body.classList.toggle('nav-open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  backdrop.addEventListener('click', close);
+  document.querySelectorAll('.docs-side a').forEach(a => a.addEventListener('click', close));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 760) close(); });
+})();
 
 /* ─────────── copy buttons ─────────── */
 document.querySelectorAll('[data-copy]').forEach(b => {
