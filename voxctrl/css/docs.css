@@ -145,6 +145,29 @@
   border: 1px solid rgba(34, 212, 239, 0.15);
 }
 
+/* standalone code blocks (pre.code-inline) */
+.docs-content .code-inline,
+.code-inline {
+  display: block;
+  font-family: var(--mono);
+  background: var(--bg-1);
+  color: var(--txt-0);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* site links injected into the docs sidebar for the mobile drawer */
+.mobile-site-nav {
+  display: none;
+}
+
 .docs-content ul {
   padding-left: 0;
   list-style: none;
