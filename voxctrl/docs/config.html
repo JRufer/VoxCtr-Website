@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -100,7 +100,7 @@
           <tr>
             <td>config.json</td>
             <td>JSON</td>
-            <td>Global settings — model, audio, UI, MCP, TTS</td>
+            <td>Application settings — engine, audio, UI, features, OpenAI, TTS, MCP, AT-SPI2</td>
           </tr>
           <tr>
             <td>targets.toml</td>
@@ -110,29 +110,27 @@
           <tr>
             <td>bindings.toml</td>
             <td>TOML</td>
-            <td>Hotkey → target bindings</td>
-          </tr>
-          <tr>
-            <td>backups/</td>
-            <td>—</td>
-            <td>Auto-backups of all three (last 20 kept)</td>
+            <td>Hotkey binding definitions</td>
           </tr>
         </tbody>
       </table>
 
       <h2>Data directory</h2>
-      <p>Models, TTS voices, and other data are stored under <code>~/.local/share/voxctrl/</code>:</p>
+      <p>Models and TTS voices are stored under <code>~/.local/share/voxctrl/</code>:</p>
       <ul>
-        <li><code>~/.local/share/voxctrl/models/</code> — downloaded GGUF / ONNX model files</li>
+        <li><code>~/.local/share/voxctrl/models/</code> — downloaded Whisper GGUF model files</li>
         <li><code>~/.local/share/voxctrl/piper-voices/</code> — downloaded Piper TTS voice files</li>
+        <li><code>~/.local/share/voxctrl/pocket-tts-voices/</code> — custom Pocket-TTS reference voice clips</li>
       </ul>
 
-      <h2>Validation</h2>
-      <p>A startup validator catches malformed <code>config.json</code>, <code>targets.toml</code>, and
-        <code>bindings.toml</code> with clear error messages. Errors fall back to defaults rather than crashing the app.
-      </p>
+      <h2>Migration</h2>
+      <p>VoxCtrl auto-migrates older config formats on load — unrecognized fields are silently ignored, and missing
+        fields fall back to their defaults. This keeps things compatible across upgrades and downgrades. One known
+        migration: <code>features.show_notification</code> moved to <code>ui.show_notification</code> in an early
+        release; the migrated config is immediately re-saved to disk to clean up the old key.</p>
 
-      <h2>Key settings</h2>
+      <h2>engine</h2>
+      <p>The engine config has two top-level fields plus a nested sub-object per backend.</p>
       <table class="docs-table">
         <thead>
           <tr>
@@ -143,57 +141,460 @@
         </thead>
         <tbody>
           <tr>
-            <td>engine.backend</td>
+            <td>backend</td>
             <td>"auto"</td>
-            <td>Inference backend: "auto" | "whisper-cpp" | "moonshine"</td>
+            <td>"auto" | "whisper-cpp" | "moonshine" — auto selects based on GPU availability</td>
           </tr>
           <tr>
-            <td>engine.whisper_cpp.model_size</td>
+            <td>inference_mode</td>
+            <td>"Balanced"</td>
+            <td>"Balanced" | "Aggressive" — Balanced is recommended</td>
+          </tr>
+          <tr>
+            <td>whisper_cpp.model_size</td>
             <td>"large-v3"</td>
-            <td>Active Whisper model name</td>
+            <td>tiny, tiny.en, base, base.en, small, small.en, medium, medium.en, large-v2, large-v3,
+              large-v3-turbo</td>
           </tr>
           <tr>
-            <td>tts.enabled</td>
-            <td>false</td>
-            <td>Master TTS on/off</td>
+            <td>whisper_cpp.device</td>
+            <td>"auto"</td>
+            <td>auto | cpu | cuda | vulkan</td>
           </tr>
           <tr>
-            <td>tts.voice</td>
-            <td>en-us-lessac-medium</td>
-            <td>Active Piper voice</td>
+            <td>whisper_cpp.threads</td>
+            <td>0</td>
+            <td>CPU thread count; 0 = half of logical cores</td>
           </tr>
           <tr>
-            <td>tts.stop_key</td>
-            <td>[KEY_ESCAPE]</td>
-            <td>Global TTS interrupt</td>
+            <td>whisper_cpp.model_dir</td>
+            <td>""</td>
+            <td>Custom model directory; empty = <code>~/.local/share/voxctrl/models/</code></td>
           </tr>
           <tr>
-            <td>tts.response_overlay</td>
-            <td>true</td>
-            <td>Show teal overlay during TTS</td>
+            <td>moonshine.model_size</td>
+            <td>"base"</td>
+            <td>"base" | "tiny" (only used when backend = "moonshine")</td>
           </tr>
           <tr>
-            <td>mcp.server_enabled</td>
-            <td>false</td>
-            <td>Start MCP server on launch</td>
-          </tr>
-          <tr>
-            <td>mcp.record_timeout</td>
-            <td>15.0</td>
-            <td>Default recording timeout (s)</td>
-          </tr>
-          <tr>
-            <td>ui.overlay_style</td>
-            <td>"blue_wave"</td>
-            <td>Active overlay style: "blue_wave" | "voice_card" | "waveform" | "pulse" | "none"</td>
-          </tr>
-          <tr>
-            <td>atspi.injection</td>
-            <td>true</td>
-            <td>Try AT-SPI2 insertText first</td>
+            <td>moonshine.language</td>
+            <td>"en"</td>
+            <td>BCP-47 language code</td>
           </tr>
         </tbody>
       </table>
+
+      <h2>audio</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>vad_threshold</td>
+            <td>0.5</td>
+            <td>Voice Activity Detection sensitivity (0.0–1.0); higher = more sensitive</td>
+          </tr>
+          <tr>
+            <td>min_silence_duration_ms</td>
+            <td>500</td>
+            <td>Milliseconds of silence before stopping a recording session</td>
+          </tr>
+          <tr>
+            <td>input_device_index</td>
+            <td>null</td>
+            <td>CPAL device index; null = auto-detect</td>
+          </tr>
+          <tr>
+            <td>evdev_device</td>
+            <td>null</td>
+            <td>Linux evdev keyboard device path for hotkeys, e.g. "/dev/input/event4"</td>
+          </tr>
+          <tr>
+            <td>noise_suppression</td>
+            <td>false</td>
+            <td>Enable basic noise suppression pre-processing</td>
+          </tr>
+          <tr>
+            <td>gain</td>
+            <td>1.0</td>
+            <td>Microphone amplification multiplier</td>
+          </tr>
+          <tr>
+            <td>dynamic_stream</td>
+            <td>true</td>
+            <td>Open mic on-demand (true) vs. always-on (false)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ui</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>show_overlay</td>
+            <td>true</td>
+            <td>Whether the overlay window is currently visible</td>
+          </tr>
+          <tr>
+            <td>overlay_style</td>
+            <td>"blue_wave"</td>
+            <td>blue_wave | voice_card | waveform | pulse | mono_bars | spectrum | terminal | vinyl | none</td>
+          </tr>
+          <tr>
+            <td>overlay_position</td>
+            <td>"center"</td>
+            <td>top | center | bottom</td>
+          </tr>
+          <tr>
+            <td>overlay_monitor</td>
+            <td>"primary"</td>
+            <td>"primary" or a specific monitor name</td>
+          </tr>
+          <tr>
+            <td>auto_show_settings</td>
+            <td>true</td>
+            <td>Auto-show Settings window on startup</td>
+          </tr>
+          <tr>
+            <td>show_notification</td>
+            <td>false</td>
+            <td>Desktop toast notification after text delivery</td>
+          </tr>
+          <tr>
+            <td>history_enabled</td>
+            <td>false</td>
+            <td>Enable transcription history tracking</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>features</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>remove_fillers</td>
+            <td>true</td>
+            <td>Strip filler words (uh, um, hmm, er, ah, etc.)</td>
+          </tr>
+          <tr>
+            <td>spoken_punctuation</td>
+            <td>true</td>
+            <td>Convert spoken punctuation words to symbols (e.g. "period" → ".")</td>
+          </tr>
+          <tr>
+            <td>auto_format_lists</td>
+            <td>true</td>
+            <td>Detect "first/second/third" patterns and reformat as a numbered list</td>
+          </tr>
+          <tr>
+            <td>quiet_mode</td>
+            <td>false</td>
+            <td>Suppress overlay notifications during transcription</td>
+          </tr>
+          <tr>
+            <td>custom_vocabulary</td>
+            <td>[]</td>
+            <td>Custom words corrected post-transcription via fuzzy Levenshtein matching</td>
+          </tr>
+          <tr>
+            <td>snippets</td>
+            <td>{}</td>
+            <td>Short code → expansion text map</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>openai</h2>
+      <p>LLM post-processing through any OpenAI-compatible API server — local or hosted. Exposed in the GUI under
+        <strong>Settings → OpenAI API</strong>. Each request sends a system prompt (how to transform the text) and a
+        user prompt containing <code>{text}</code>, replaced with the dictated speech. Configs written before this
+        section was renamed used the key <code>ollama</code>; that key is still accepted via a serde alias.</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>enabled</td>
+            <td>false</td>
+            <td>Enable LLM post-processing</td>
+          </tr>
+          <tr>
+            <td>endpoint</td>
+            <td>"http://localhost:11434"</td>
+            <td>OpenAI-compatible API base URL; <code>/v1</code> suffix added automatically when missing</td>
+          </tr>
+          <tr>
+            <td>api_key</td>
+            <td>null</td>
+            <td>Sent as a Bearer token; required by most remote providers</td>
+          </tr>
+          <tr>
+            <td>model</td>
+            <td>"llama3.2:1b"</td>
+            <td>Model name</td>
+          </tr>
+          <tr>
+            <td>mode</td>
+            <td>"clean"</td>
+            <td>clean | formal | casual | bullet | concise | custom</td>
+          </tr>
+          <tr>
+            <td>system_prompt</td>
+            <td>"Fix grammar and punctuation only…"</td>
+            <td>System message describing the transformation; empty = none</td>
+          </tr>
+          <tr>
+            <td>user_prompt</td>
+            <td>"{text}"</td>
+            <td>User message template; must contain <code>{text}</code></td>
+          </tr>
+          <tr>
+            <td>timeout_secs</td>
+            <td>8</td>
+            <td>HTTP request timeout in seconds</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>tts</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>enabled</td>
+            <td>false</td>
+            <td>Enable TTS subsystem</td>
+          </tr>
+          <tr>
+            <td>engine</td>
+            <td>"piper"</td>
+            <td>piper | pocket_tts | espeak</td>
+          </tr>
+          <tr>
+            <td>voice</td>
+            <td>"en-us-lessac-medium"</td>
+            <td>Active Piper voice name</td>
+          </tr>
+          <tr>
+            <td>voice_dir</td>
+            <td>""</td>
+            <td>Piper voice directory; empty = <code>~/.local/share/voxctrl/piper-voices/</code></td>
+          </tr>
+          <tr>
+            <td>stop_key</td>
+            <td>[KEY_ESCAPE]</td>
+            <td>Keys that cancel current TTS playback</td>
+          </tr>
+          <tr>
+            <td>response_overlay</td>
+            <td>true</td>
+            <td>Show overlay indicator while TTS is speaking</td>
+          </tr>
+          <tr>
+            <td>speed</td>
+            <td>1.0</td>
+            <td>Speech speed multiplier (0.5–2.0); not used by Pocket-TTS</td>
+          </tr>
+          <tr>
+            <td>gpu</td>
+            <td>false</td>
+            <td>Enable GPU acceleration (CUDA) for Piper</td>
+          </tr>
+          <tr>
+            <td>pocket_tts.voice</td>
+            <td>"alba"</td>
+            <td>Bundled voice ID (alba, anna, vera, charles, michael) or custom clip stem</td>
+          </tr>
+          <tr>
+            <td>pocket_tts.prewarm</td>
+            <td>false</td>
+            <td>Pre-warm model on startup so first speech is instantaneous</td>
+          </tr>
+          <tr>
+            <td>pocket_tts.hf_token</td>
+            <td>null</td>
+            <td>HuggingFace token to download the gated <code>kyutai/pocket-tts</code> weights</td>
+          </tr>
+          <tr>
+            <td>pocket_tts.voice_dir</td>
+            <td>""</td>
+            <td>Directory scanned for custom .wav voice clips; empty = default directory</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Pocket-TTS is a voice-cloning neural TTS engine — each voice is a short reference audio clip that conditions
+        synthesis, rather than a fixed precomputed embedding.</p>
+
+      <h2>mcp</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>server_enabled</td>
+            <td>false</td>
+            <td>Start the MCP socket server on launch</td>
+          </tr>
+          <tr>
+            <td>record_timeout</td>
+            <td>15.0</td>
+            <td>Max seconds for <code>transcribe_voice</code> to wait for speech</td>
+          </tr>
+          <tr>
+            <td>visual_feedback</td>
+            <td>true</td>
+            <td>Show overlay indicator while MCP server is listening to microphone</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>atspi</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>injection</td>
+            <td>true</td>
+            <td>Use AT-SPI2 for text insertion when available</td>
+          </tr>
+          <tr>
+            <td>context_prompt</td>
+            <td>true</td>
+            <td>Read focused widget text to use as Whisper context prompt</td>
+          </tr>
+          <tr>
+            <td>auto_code_mode</td>
+            <td>true</td>
+            <td>Detect code editors/terminals and enable code-mode processing automatically</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>targets.toml</h2>
+      <p>Each output destination is a <code>[[target]]</code> block, identified by <code>id</code> and routed to by
+        hotkey bindings. Common fields: <code>label</code>, <code>delivery</code>, <code>append_newline</code>
+        (default true), <code>strip_newlines</code> (default false, inject only), <code>send_on_release</code>
+        (default true), <code>initial_prompt</code> (Whisper context override), and a per-target
+        <code>[target.processing]</code> block that can override any global feature flag
+        (<code>remove_fillers</code>, <code>spoken_punctuation</code>, <code>auto_format_lists</code>,
+        <code>apply_snippets</code>, <code>code_mode</code>, <code>quiet_mode</code>, <code>atspi_context</code>,
+        <code>noise_suppression</code>).</p>
+      <p>Delivery types: <code>inject</code>, <code>clipboard</code>, <code>file</code> (with
+        <code>file_path</code>/<code>file_prefix</code>/<code>file_timestamp</code>/<code>file_mode</code>),
+        <code>http</code> (<code>http_url</code>, <code>http_method</code>), <code>webhook</code>
+        (<code>webhook_url</code>, <code>webhook_secret</code>), <code>exec</code> (<code>command</code>),
+        <code>socket</code> (<code>socket_unix</code> or <code>socket_host</code>/<code>socket_port</code>),
+        <code>pipe</code> (<code>pipe_path</code>), and <code>speak</code>. Any target can also set a
+        <code>response_pipe</code> FIFO path for TTS output.</p>
+
+      <h2>bindings.toml</h2>
+      <p>Each hotkey is a <code>[[binding]]</code> block with <code>id</code>, <code>label</code>,
+        <code>keys</code> (evdev key names), <code>gesture</code>, and <code>target_ids</code> (ordered list of
+        target IDs to route to).</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>gesture</td>
+            <td>—</td>
+            <td>hold | toggle | double_tap | double_tap_hold | chord</td>
+          </tr>
+          <tr>
+            <td>subkey</td>
+            <td>—</td>
+            <td>Trigger key for the chord gesture, pressed after base keys are held</td>
+          </tr>
+          <tr>
+            <td>hold_threshold_ms</td>
+            <td>200</td>
+            <td>Min hold duration in ms for hold / double-tap-hold gestures</td>
+          </tr>
+          <tr>
+            <td>tap_ms</td>
+            <td>250</td>
+            <td>Double-tap inter-press window in ms</td>
+          </tr>
+          <tr>
+            <td>disabled</td>
+            <td>false</td>
+            <td>Disable without deleting</td>
+          </tr>
+          <tr>
+            <td>openai_enabled</td>
+            <td>null</td>
+            <td>Enable/disable LLM post-processing for this hotkey (null = inherit global)</td>
+          </tr>
+          <tr>
+            <td>openai_mode</td>
+            <td>null</td>
+            <td>LLM mode override for this hotkey (clean/formal/casual/bullet/concise/custom)</td>
+          </tr>
+          <tr>
+            <td>openai_model</td>
+            <td>null</td>
+            <td>Model override for this hotkey (null = inherit global)</td>
+          </tr>
+          <tr>
+            <td>openai_prompt</td>
+            <td>null</td>
+            <td>User prompt template override for this hotkey; must contain <code>{text}</code> (null = inherit global)</td>
+          </tr>
+          <tr>
+            <td>openai_system_prompt</td>
+            <td>null</td>
+            <td>System prompt override for this hotkey (null = inherit global)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>The per-hotkey field names were renamed from <code>ollama_*</code> to <code>openai_*</code>; the legacy
+        names are still accepted via serde aliases.</p>
 
       <div class="docs-foot">
         <a href="dbus.html"><small>← previous</small><span>DBus control</span></a>
@@ -242,7 +643,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

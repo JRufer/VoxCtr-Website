@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -122,7 +122,7 @@
           <tr>
             <td><code>espeak-ng</code></td>
             <td>Optional</td>
-            <td>TTS fallback engine</td>
+            <td>Lightweight TTS fallback engine</td>
           </tr>
           <tr>
             <td><code>socat</code></td>
@@ -131,6 +131,10 @@
           </tr>
         </tbody>
       </table>
+      <p>For <strong>Pocket-TTS</strong> voice cloning, you'll also need a free HuggingFace account with the
+        <code>kyutai/pocket-tts</code> model license accepted, and an access token — see
+        <a href="tts.html">Voice output</a>.
+      </p>
 
       <h3>Windows</h3>
       <p>Windows 10 (1903+) or Windows 11. WebView2 runtime is pre-installed on Windows 11; on Windows 10 it downloads
@@ -147,29 +151,26 @@
         </thead>
         <tbody>
           <tr>
-            <td>NVIDIA (CUDA 11+)</td>
+            <td>NVIDIA (CUDA)</td>
             <td>whisper.cpp (CUDA)</td>
-            <td>Auto-detected via <code>nvidia-smi</code> — no extra config</td>
+            <td>Requires a CUDA-enabled build (<code>npm run tauri build -- --features cuda</code>) — the
+              standard AppImage is CPU/Vulkan only. Auto-detected via <code>nvidia-smi</code> once built with CUDA.</td>
           </tr>
           <tr>
-            <td>AMD RDNA / GCN</td>
+            <td>AMD / Intel / NVIDIA</td>
             <td>whisper.cpp (Vulkan)</td>
-            <td>Install Vulkan ICD: <code>sudo pacman -S vulkan-icd-loader</code></td>
-          </tr>
-          <tr>
-            <td>Intel Arc / Iris Xe</td>
-            <td>whisper.cpp (Vulkan)</td>
-            <td>Install Vulkan ICD: <code>sudo apt install libvulkan1 vulkan-tools</code></td>
+            <td>Install Vulkan ICD: <code>sudo pacman -S vulkan-icd-loader</code> (Arch) or
+              <code>sudo apt install vulkan-tools libvulkan1</code> (Ubuntu)</td>
           </tr>
           <tr>
             <td>CPU only</td>
-            <td>whisper.cpp (CPU int8)</td>
+            <td>whisper.cpp (CPU)</td>
             <td>Out of the box — no extra steps</td>
           </tr>
           <tr>
-            <td>Raspberry Pi / Edge</td>
-            <td>Moonshine (ONNX)</td>
-            <td>Select <code>engine.backend = "moonshine"</code> in Settings → Engine</td>
+            <td>Edge / streaming</td>
+            <td>Moonshine</td>
+            <td>Select the Moonshine backend in Settings → Engine</td>
           </tr>
         </tbody>
       </table>
@@ -179,26 +180,35 @@
           Releases</a>.</p>
 
       <h3>Quick run</h3>
-      <pre class="code-inline">chmod +x voxctrl.AppImage
-./voxctrl.AppImage</pre>
+      <pre class="code-inline">chmod +x VoxCtrl.AppImage
+./VoxCtrl-x86_64.AppImage</pre>
 
-      <h3>System install (with desktop entry and udev rules)</h3>
-      <pre class="code-inline">bash install.sh</pre>
-      <p>The install script:</p>
+      <h3>System install (desktop entry, udev rules, input group)</h3>
+      <p>VoxCtrl supports two ways to set up system integration:</p>
       <ul>
-        <li>Copies the AppImage to <code>~/.local/bin/voxctrl</code></li>
-        <li>Installs a <code>.desktop</code> file for application launchers</li>
-        <li>Creates udev rules for <code>/dev/input</code> access (required for global hotkeys)</li>
+        <li><strong>CLI mode:</strong> run the AppImage with the <code>--install</code> flag in a terminal — it prompts
+          for your password via <code>sudo</code>:
+          <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
+        </li>
+        <li><strong>GUI mode:</strong> launch the AppImage normally. If hardware permissions are missing, a
+          diagnostics window appears automatically with a <strong>Setup System Integration</strong> button that
+          prompts for your password via <code>pkexec</code>.</li>
+      </ul>
+      <p>The installer:</p>
+      <ul>
+        <li>Copies the app icon to <code>~/.local/share/icons/hicolor/128x128/apps/voxctrl.png</code></li>
+        <li>Registers a <code>.desktop</code> launcher in <code>~/.local/share/applications/voxctrl.desktop</code></li>
+        <li>Creates udev rules at <code>/etc/udev/rules.d/99-voxctrl.rules</code> for <code>/dev/input</code> access
+          (required for global hotkeys)</li>
         <li>Adds the current user to the <code>input</code> group</li>
       </ul>
-      <div class="note"><span class="icon">!</span> After running <code>install.sh</code>, log out and back in for the
-        <code>input</code> group membership to take effect. Until then, global hotkeys will not work.
+      <div class="note"><span class="icon">!</span> After running the installer, log out and back in (or reboot) for
+        the <code>input</code> group membership to take effect. Until then, global hotkeys will not work.
       </div>
 
       <h2>Option B: Windows</h2>
-      <p>Download the <code>voxctrl_setup.exe</code> or <code>voxctrl.msi</code> installer from GitHub Releases and
-        run
-        it. WebView2 is bundled or auto-downloaded.</p>
+      <p>Download the Windows installer from GitHub Releases and run
+        it. WebView2 is pre-installed on Windows 11; on Windows 10 (1903+) it auto-downloads on first run.</p>
       <p>Global hotkeys on Windows use Win32 hooks — no special permissions required.</p>
 
       <h2>Option C: Build from source</h2>
@@ -215,8 +225,8 @@ npm run tauri build</pre>
         Settings window.</p>
       <ol>
         <li><strong>Download a model</strong> — Settings → Engine → choose a size → click Download. Recommendation:
-          <code>small</code> (~466 MB) for good speed/accuracy; <code>large-v3</code> (default, ~3.1 GB) for maximum
-          accuracy.
+          <code>small</code> (~466 MB) for good speed/accuracy; <code>large-v3</code> (default, ~3 GB) for maximum
+          accuracy. <code>large-v3-turbo</code> (~1.6 GB) trades a little accuracy for roughly double the speed.
         </li>
         <li><strong>Check your hotkey</strong> — a default binding (<code>Super + Space</code>, hold gesture → inject to
           focused window) is created automatically. Verify in Settings → Hotkeys.</li>
@@ -226,20 +236,88 @@ npm run tauri build</pre>
       </ol>
 
       <h2>Optional Setup</h2>
-      <h3>TTS (Piper voices)</h3>
-      <p>Go to Settings → TTS, enable TTS, select a voice, click Download. Voices are stored at
-        <code>~/.local/share/voxctrl/piper-voices/</code>.
+      <h3>TTS (Piper / Pocket-TTS voices)</h3>
+      <p>Go to Settings → TTS, enable TTS, select a voice, click Download. Piper voices are stored at
+        <code>~/.local/share/voxctrl/piper-voices/</code>. Pocket-TTS is a pure-Rust voice-cloning engine — its model
+        weights are downloaded once to the HuggingFace cache (<code>~/.cache/huggingface/hub/</code>) and require a
+        HuggingFace account with the <code>kyutai/pocket-tts</code> license accepted plus an access token, set via
+        Settings → TTS → Pocket-TTS or the <code>HF_TOKEN</code> environment variable. Espeak-ng is always available
+        as a lightweight fallback.
       </p>
 
-      <h3>MCP Server (Claude Desktop)</h3>
+      <h3>MCP Server (Claude Desktop / Cursor)</h3>
       <p>Enable in Settings → Engine → MCP Server. Then add to <code>~/.config/claude/claude_desktop_config.json</code>:
       </p>
       <pre
         class="code-inline">{"mcpServers":{"voxctrl":{"command":"socat","args":["STDIO","UNIX-CONNECT:/tmp/voxctrl-mcp.sock"]}}}</pre>
 
-      <h3>Ollama post-processing</h3>
-      <p>Install <a href="https://ollama.ai" target="_blank">Ollama</a>, pull a model
-        (<code>ollama pull llama3.2</code>), then enable in Settings → Ollama.</p>
+      <h3>LLM post-processing (OpenAI-compatible API)</h3>
+      <p>Point voxctrl at any OpenAI-compatible API server for grammar/style rewriting. For a fully local setup with
+        <a href="https://ollama.ai" target="_blank">Ollama</a>: install Ollama, pull a model
+        (<code>ollama pull llama3.2</code>), then enable in Settings → OpenAI API — the default URL
+        (<code>http://localhost:11434</code>) already points at a local Ollama instance. To use a remote provider
+        instead, set the API URL to its base URL and provide an API key.</p>
+
+      <h2>Permissions setup (Linux)</h2>
+      <h3>Global hotkeys</h3>
+      <p>voxctrl uses evdev to listen for global keyboard events. Your user must be in the <code>input</code> group:</p>
+      <pre class="code-inline">sudo usermod -aG input $USER
+# Log out and back in
+
+# Verify:
+groups $USER | grep input</pre>
+
+      <h3>Wayland text injection</h3>
+      <p>For Wayland sessions, install <code>wtype</code>:</p>
+      <pre class="code-inline"># Ubuntu/Debian
+sudo apt install wtype
+
+# Arch
+sudo pacman -S wtype
+
+# Fedora
+sudo dnf install wtype</pre>
+
+      <h3>X11 text injection</h3>
+      <p>For X11 sessions, install <code>xdotool</code>:</p>
+      <pre class="code-inline"># Ubuntu/Debian
+sudo apt install xdotool
+
+# Arch
+sudo pacman -S xdotool</pre>
+
+      <h2>Troubleshooting</h2>
+      <h3>Hotkeys not working</h3>
+      <ul>
+        <li>Check you are in the <code>input</code> group: <code>groups | grep input</code></li>
+        <li>Log out and back in after being added to the group</li>
+        <li>On some distros, the udev rule path differs — the built-in installer handles this automatically</li>
+      </ul>
+      <h3>No audio devices found</h3>
+      <ul>
+        <li>Run <code>arecord -l</code> to verify your mic is recognized by ALSA</li>
+        <li>Check if PulseAudio/PipeWire is running: <code>pactl info</code></li>
+        <li>Try setting <code>audio.input_device_index</code> manually to a specific device index in <code>config.json</code></li>
+      </ul>
+      <h3>Text not injecting on Wayland</h3>
+      <ul>
+        <li>Verify <code>wtype</code> is installed: <code>which wtype</code></li>
+        <li>Some applications block synthetic input — clipboard fallback always works: use <code>delivery = "clipboard"</code></li>
+      </ul>
+      <h3>Whisper outputs wrong language</h3>
+      <ul>
+        <li>Set <code>engine.language</code> to your BCP-47 language code (e.g. <code>"de"</code>, <code>"fr"</code>, <code>"es"</code>) in <code>config.json</code></li>
+        <li>Use a larger model for better non-English accuracy</li>
+      </ul>
+      <h3>AppImage won't launch</h3>
+      <ul>
+        <li>Install FUSE: <code>sudo apt install fuse libfuse2</code></li>
+        <li>Or extract and run directly: <code>./VoxCtrl.AppImage --appimage-extract &amp;&amp; squashfs-root/AppRun</code></li>
+      </ul>
+      <h3>Crash logs</h3>
+      <p>If the application crashes or fails to start, check
+        <code>~/.local/share/voxctrl/startup_errors.log</code>. This file logs system configuration details and
+        errors only — it never records transcribed speech or LLM prompts. Attach it when opening GitHub issues.</p>
 
       <div class="docs-foot">
         <a href="quickstart.html"><small>← previous</small><span>Quickstart</span></a>
@@ -288,7 +366,7 @@ npm run tauri build</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

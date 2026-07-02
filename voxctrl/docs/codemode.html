@@ -31,7 +31,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -118,13 +118,22 @@
       </table>
 
       <h2>Triggering code mode</h2>
-      <p>Three ways:</p>
+      <p>Two ways:</p>
       <ul>
-        <li><strong>Per-target setting:</strong> set <code>post_processing = "code_mode"</code> on a target dedicated to
-          your editor</li>
-        <li><strong>Global toggle:</strong> Settings → Dictation → Code mode</li>
-        <li><strong>Auto code mode:</strong> AT-SPI2 sees a terminal/IDE focused and switches automatically</li>
+        <li><strong>Per-target setting:</strong> set <code>code_mode = true</code> under
+          <code>[my_target.processing]</code> in <code>targets.toml</code>, for a target dedicated to your editor or
+          terminal</li>
+        <li><strong>Auto code mode:</strong> when <code>atspi.auto_code_mode</code> is enabled (default
+          <code>true</code>), voxctrl detects a focused code editor or terminal and enables code-mode processing
+          automatically for that dictation, without touching your target config</li>
       </ul>
+      <pre class="code-inline">[[target]]
+id = "code_editor"
+label = "Code Editor"
+delivery = "inject"
+
+[code_editor.processing]
+code_mode = true</pre>
 
       <div class="docs-foot">
         <a href="atspi.html"><small>← previous</small><span>AT-SPI2</span></a>
@@ -173,7 +182,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

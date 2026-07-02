@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -112,23 +112,29 @@
 
       <h2>Transport</h2>
       <p>Unix domain socket at <code>/tmp/voxctrl-mcp.sock</code> (Linux) or named pipe
-        <code>\\\\.\\ pipe\\voxctrl-mcp</code> (Windows). Each connection gets its own async handler.
-        Newline-delimited
-        JSON-RPC 2.0 — one JSON object per line, terminated with <code>\n</code>.
+        <code>\\.\pipe\voxctrl-mcp</code> (Windows). Each connection is spawned as its own async <code>tokio</code>
+        task. Newline-delimited
+        JSON-RPC 2.0 — one JSON object per line, terminated with <code>\n</code>. Follows MCP spec
+        <code>2024-11-05</code>.
       </p>
 
       <h2>Enabling</h2>
-      <p>Settings → Engine → MCP Server → toggle <strong>Enable MCP Server</strong>. Or set directly in
-        <code>~/.config/voxctrl/config.json</code>:
+      <p>Settings → General → MCP Server section → toggle <strong>Enable MCP Server</strong>. Or set directly in
+        <code>~/.config/voxctrl/config.json</code> under the <code>mcp</code> key:
       </p>
-      <pre class="code-inline">{"mcp": {"server_enabled": true}}</pre>
+      <pre class="code-inline">{
+  "mcp": {
+    "server_enabled": true,
+    "record_timeout": 15.0,
+    "visual_feedback": true
+  }
+}</pre>
+      <p>The server starts automatically when the app launches if <code>server_enabled</code> is <code>true</code>.</p>
 
       <h2>Claude Desktop</h2>
-      <p>Click <strong>Register in Claude Desktop</strong> in Settings — voxctrl writes the socat bridge config to
-        <code>~/.config/claude/claude_desktop_config.json</code> automatically. Restart Claude Desktop. The three tools
-        appear in the picker.
-      </p>
-      <p>To configure manually, add the following to <code>~/.config/claude/claude_desktop_config.json</code>:</p>
+      <p>Add the bridge config to <code>~/.config/claude/claude_desktop_config.json</code> manually — voxctrl must
+        already be running before Claude Desktop connects. On Linux, the bridge uses <code>socat</code> to pipe
+        stdio to the Unix socket:</p>
       <pre class="code-inline">{
   "mcpServers": {
     "voxctrl": {
@@ -141,8 +147,8 @@
   }
 }</pre>
       <div class="note"><span class="icon">ⓘ</span> voxctrl must already be running before Claude Desktop connects.
-        The
-        socket is created at app startup when MCP is enabled.</div>
+        Restart Claude Desktop after editing the config — the three tools then appear automatically in the tool
+        picker.</div>
 
       <h2>Protocol handshake</h2>
       <ul>
@@ -152,22 +158,60 @@
         <li>Call any tool with <code>tools/call</code></li>
       </ul>
 
+      <h2>Error codes</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>-32700</td>
+            <td>Parse error (malformed JSON)</td>
+          </tr>
+          <tr>
+            <td>-32601</td>
+            <td>Method not found</td>
+          </tr>
+          <tr>
+            <td>-32603</td>
+            <td>Internal error (unknown tool name, missing required argument, callback exception)</td>
+          </tr>
+        </tbody>
+      </table>
+
       <h2>Behaviour notes</h2>
       <ul>
         <li>While <code>transcribe_voice</code> records, the recording overlay is always shown — the user always has a
           visual indicator that the mic is live</li>
-        <li>The mic is released automatically once the RMS noise gate detects silence or <code>timeout_seconds</code>
-          elapses</li>
-        <li>voxctrl's full post-processing pipeline is applied before the transcript is returned</li>
-        <li><code>speak_text</code> returns as soon as the text is queued — does not block until playback finishes</li>
-        <li>Only one <code>transcribe_voice</code> call can be in flight at a time; concurrent calls queue</li>
+        <li>The mic is released automatically once VAD detects silence or <code>timeout_seconds</code> (default
+          <code>15.0</code>) elapses</li>
+        <li>voxctrl's full post-processing pipeline (including OpenAI API LLM formatting/cleaning, if enabled) is
+          applied before the transcript is returned</li>
+        <li>If no speech is captured, <code>transcribe_voice</code> returns the literal text
+          <code>(no speech detected)</code></li>
+        <li><code>speak_text</code> returns as soon as the text is queued — does not block until playback finishes.
+          If <code>piper</code> isn't installed or its voice files are missing, playback falls back to
+          <code>espeak-ng</code> automatically</li>
+        <li><code>get_status</code> returns a JSON-encoded object as its text content:
+          <code>{"recording": false, "speaking": false}</code></li>
       </ul>
 
       <h2>Response loopback (FIFO)</h2>
-      <p>For agents that generate responses to a named FIFO, set <code>response_pipe</code> on the target. voxctrl
-        reads
-        each line and passes it to the TTS engine. Each line in the FIFO becomes a separate utterance; empty lines are
-        ignored. The listener re-opens the FIFO on EOF so the agent can restart without restarting voxctrl.</p>
+      <p>For agents that generate responses to a named FIFO, set <code>response_pipe</code> on the target in
+        <code>targets.toml</code>. voxctrl spawns an async <code>run_fifo_responder</code> task that watches the
+        FIFO; when the agent writes a line to it, voxctrl reads it and pushes it straight to the TTS worker queue —
+        no <code>speak_text</code> call required. The listener automatically handles agent disconnects (EOF) and
+        reconnects on the next session without restarting voxctrl.</p>
+      <pre class="code-inline">[[target]]
+id = "my-agent"
+label = "My Agent"
+delivery = "pipe"
+pipe_path = "/tmp/my-agent.in"
+response_pipe = "/tmp/my-agent.out"   # agent writes responses here
+append_newline = true</pre>
 
       <div class="docs-foot">
         <a href="overlays.html"><small>← previous</small><span>Overlays</span></a>
@@ -216,7 +260,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

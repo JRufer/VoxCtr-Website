@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -96,29 +96,82 @@
         <thead>
           <tr>
             <th>Method</th>
+            <th>Signature</th>
             <th>What it does</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>ToggleRecording</td>
-            <td>Start/stop the default target's recording</td>
+            <td>start_recording</td>
+            <td><code>() → ()</code></td>
+            <td>Begin recording</td>
           </tr>
           <tr>
-            <td>GetStatus</td>
-            <td>Returns the current state string</td>
+            <td>stop_recording</td>
+            <td><code>() → ()</code></td>
+            <td>Stop recording and process audio</td>
           </tr>
           <tr>
-            <td>GetWordCount</td>
-            <td>Returns total transcribed word count for the session</td>
+            <td>toggle_recording</td>
+            <td><code>() → ()</code></td>
+            <td>Toggle recording state</td>
+          </tr>
+          <tr>
+            <td>get_status</td>
+            <td><code>() → s</code></td>
+            <td>Returns <code>"idle"</code>, <code>"recording"</code>, or <code>"transcribing"</code></td>
+          </tr>
+          <tr>
+            <td>get_word_count</td>
+            <td><code>() → u</code></td>
+            <td>Total words dictated this session</td>
           </tr>
         </tbody>
       </table>
 
-      <h2>Example: Waybar module</h2>
-      <p>Bind the toggle to a click handler on a Waybar status indicator; bind the word count to a tooltip.
-        <code>qdbus</code> and <code>dbus-send</code> both work — use <code>--session</code>.
+      <h2>Signals</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Signal</th>
+            <th>Signature</th>
+            <th>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>status_changed</td>
+            <td><code>(s)</code></td>
+            <td>Emitted when recording state changes</td>
+          </tr>
+          <tr>
+            <td>text_injected</td>
+            <td><code>(s)</code></td>
+            <td>Emitted after text is delivered to a target</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Example usage</h2>
+      <pre class="code-inline"># Start recording
+dbus-send --session --dest=ai.voxctrl.Dictation \
+  /ai/voxctrl/Dictation \
+  ai.voxctrl.Dictation.start_recording
+
+# Watch for injected text
+dbus-monitor --session "type='signal',interface='ai.voxctrl.Dictation'"
+
+# Get current status ("idle", "recording", or "transcribing")
+dbus-send --session --print-reply \
+  --dest=ai.voxctrl.Dictation \
+  /ai/voxctrl/Dictation \
+  ai.voxctrl.Dictation.get_status</pre>
+      <p>Bind <code>toggle_recording</code> to a click handler on a Waybar status indicator, and
+        <code>get_word_count</code> to a tooltip. <code>qdbus</code> and <code>dbus-send</code> both work — use
+        <code>--session</code>.
       </p>
+      <div class="note"><span class="icon">ⓘ</span> The DBus service is Linux-only — it's a stub on other platforms
+        (compiles but does nothing).</div>
 
       <div class="docs-foot">
         <a href="mcp.html"><small>← previous</small><span>MCP server</span></a>
@@ -167,7 +220,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

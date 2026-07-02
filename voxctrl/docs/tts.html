@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Voice Output (TTS) — voxctrl Docs</title>
   <meta name="description"
-    content="On-device neural TTS via Piper, with espeak-ng as automatic fallback. Eight curated voices, all downloadable in-app." />
+    content="On-device neural TTS via Piper and Pocket-TTS voice cloning, with espeak-ng as automatic fallback." />
   <link rel="icon" href="/voxctrl/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.1.3</span>
+      <span class="nav-version">v0.2.7</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -83,71 +83,163 @@
     <main class="docs-content" id="docsContent">
       <div class="crumbs">AI &amp; VOICE <span>/</span> VOICE OUTPUT</div>
       <h1>Voice output (TTS)</h1>
-      <p class="lede">On-device neural TTS via Piper, with espeak-ng as automatic fallback. Eight curated voices, all
-        downloadable in-app.</p>
+      <p class="lede">On-device neural TTS with three engines: Piper (primary, ONNX neural), Pocket-TTS (Kyutai's
+        voice-cloning neural engine), and espeak-ng as a lightweight automatic fallback.</p>
 
-      <h2>Voice catalog</h2>
+      <h2>Engines</h2>
+      <ul>
+        <li><strong>Piper</strong> — a fast, local neural TTS system using ONNX models. VoxCtrl invokes the
+          <code>piper</code> binary directly, pipes text to its stdin, and plays the raw 16-bit PCM it returns via
+          <code>rodio</code>. This is the default engine.
+        </li>
+        <li><strong>Pocket-TTS</strong> — Kyutai's lightweight FlowLM + Mimi-codec model, ported to pure Rust on top
+          of Candle (no Python, no ONNX, no subprocess). Instead of fixed voice embeddings, it clones a voice from a
+          short reference audio clip at runtime. VoxCtrl ships a small built-in catalogue of reference clips
+          (Alba, Anna, Vera, Charles, Michael) and also supports custom <code>.wav</code> voice clips. It streams
+          generated audio frame-by-frame for low perceived latency, and the model can be pre-warmed on startup with
+          the <code>prewarm</code> option. Requires a HuggingFace account that has accepted the license for the
+          gated <code>kyutai/pocket-tts</code> model, plus a personal access token (<code>hf_token</code>).
+        </li>
+        <li><strong>Espeak-ng</strong> — used automatically if Piper is unavailable or no voice is downloaded.
+          Quality is lower, but it's always available as a system package.
+        </li>
+      </ul>
+
+      <h2>GPU acceleration</h2>
+      <p>VoxCtrl supports GPU acceleration (CUDA) for the <strong>Piper</strong> engine only — it appends a
+        <code>--cuda</code> flag to the spawned Piper subprocess at runtime. Pocket-TTS (Candle-based) does not
+        currently expose a GPU toggle. If GPU initialization fails, Piper automatically and gracefully falls back to
+        the CPU without crashing.</p>
+
+      <h2>Piper voice catalog</h2>
       <table class="docs-table">
         <thead>
           <tr>
             <th>Voice</th>
-            <th>Language</th>
             <th>Quality</th>
-            <th>Size</th>
+            <th>Sample rate</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>en-us-lessac-medium</td>
-            <td>US English</td>
-            <td>Medium</td>
-            <td>~55 MB</td>
+            <td>en-us-libritts-high</td>
+            <td>High</td>
+            <td>22050 Hz</td>
           </tr>
           <tr>
             <td>en-us-ryan-high</td>
-            <td>US English</td>
             <td>High</td>
-            <td>~130 MB</td>
+            <td>22050 Hz</td>
+          </tr>
+          <tr>
+            <td>en-us-ryan-medium</td>
+            <td>Medium</td>
+            <td>22050 Hz</td>
+          </tr>
+          <tr>
+            <td>en-us-ryan-low</td>
+            <td>Low</td>
+            <td>16000 Hz</td>
+          </tr>
+          <tr>
+            <td>en-us-lessac-medium <em>(default)</em></td>
+            <td>Medium</td>
+            <td>16000 Hz</td>
+          </tr>
+          <tr>
+            <td>en-us-lessac-low</td>
+            <td>Low</td>
+            <td>16000 Hz</td>
           </tr>
           <tr>
             <td>en-us-amy-low</td>
-            <td>US English</td>
             <td>Low</td>
-            <td>~5 MB</td>
+            <td>16000 Hz</td>
           </tr>
           <tr>
-            <td>en-us-joe-medium</td>
-            <td>US English</td>
-            <td>Medium</td>
-            <td>~55 MB</td>
+            <td>en-us-kathleen-low</td>
+            <td>Low</td>
+            <td>16000 Hz</td>
+          </tr>
+          <tr>
+            <td>en-us-danny-low</td>
+            <td>Low</td>
+            <td>16000 Hz</td>
+          </tr>
+          <tr>
+            <td>en-gb-southern_english_female-low</td>
+            <td>Low</td>
+            <td>16000 Hz</td>
           </tr>
           <tr>
             <td>en-gb-alan-low</td>
-            <td>GB English</td>
             <td>Low</td>
-            <td>~5 MB</td>
+            <td>16000 Hz</td>
           </tr>
         </tbody>
       </table>
+      <p>Voices are downloaded as <code>.tar.gz</code> archives and extracted into the configured voice directory
+        (default <code>~/.local/share/voxctrl/piper-voices/</code>).</p>
+
+      <h2>Pocket-TTS voice catalog</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>alba</code></td>
+            <td>Alba (Female, default)</td>
+          </tr>
+          <tr>
+            <td><code>anna</code></td>
+            <td>Anna (Female)</td>
+          </tr>
+          <tr>
+            <td><code>vera</code></td>
+            <td>Vera (Female)</td>
+          </tr>
+          <tr>
+            <td><code>charles</code></td>
+            <td>Charles (Male)</td>
+          </tr>
+          <tr>
+            <td><code>michael</code></td>
+            <td>Michael (Male)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Drop a <code>.wav</code> reference clip into the configured <code>pocket_tts.voice_dir</code> (default
+        <code>~/.local/share/voxctrl/pocket-tts-voices/</code>) to add a custom voice — no re-encoding or extra
+        metadata needed. The filename (without extension) becomes the voice's id, e.g. <code>narrator.wav</code>
+        adds "Narrator (Custom)". Naming a clip after a built-in voice (e.g. <code>alba.wav</code>) overrides that
+        voice's bundled reference clip instead of adding a new entry.
+      </p>
 
       <h2>Setup</h2>
       <ul>
-        <li>Open Settings → Voice Output</li>
-        <li>Pick a voice from the dropdown</li>
-        <li>Click <strong>⬇ Download</strong> — progress bar in-app, files land in
-          <code>~/.local/share/voxctrl/voices/</code>
+        <li>Open Settings → TTS</li>
+        <li>Pick an engine (Piper, Pocket-TTS, or Espeak-ng) and a voice from the dropdown</li>
+        <li>Click <strong>⬇ Download</strong> — progress bar in-app; Piper voices land in
+          <code>~/.local/share/voxctrl/piper-voices/</code>, Pocket-TTS model weights and voice clips are cached via
+          the HuggingFace cache (<code>~/.cache/huggingface/hub/</code>)
         </li>
+        <li>For Pocket-TTS, supply your HuggingFace token (<code>hf_token</code>) to download the gated model</li>
         <li>Click <strong>▶ Test Voice</strong> to preview</li>
         <li>Toggle <strong>Enable TTS</strong></li>
       </ul>
 
       <h2>Stop key</h2>
-      <p>Default <code>Escape</code>. Press it from any window to interrupt TTS playback instantly. Configure in
-        Settings → Voice Output → TTS Stop Key.</p>
+      <p>Default <code>KEY_ESCAPE</code>. Press it from any window to interrupt TTS playback instantly — playback can
+        be interrupted mid-generation, not just between utterances. Configure in Settings → TTS → Stop Key.</p>
 
       <h2>Response overlay</h2>
-      <p>When enabled, a teal floating overlay appears while TTS plays — distinct from the recording overlay so you
-        always know when the app is speaking.</p>
+      <p>When enabled (<code>tts.response_overlay</code>), a green "SYSTEM RESPONDING" speaking pill slides up from
+        the bottom of the recording overlay while TTS plays, with a live mini-equalizer and the active target label —
+        distinct from the recording state so you always know when the app is speaking.</p>
 
       <div class="docs-foot">
         <a href="ai.html"><small>← previous</small><span>AI processing</span></a>
@@ -196,7 +288,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.1.3 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
