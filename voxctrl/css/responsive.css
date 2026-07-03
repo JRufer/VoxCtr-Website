@@ -175,6 +175,11 @@
     display: none;
   }
 
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+  }
+
   .nav-link {
     padding: 5px 8px;
     font-size: 12px;
@@ -219,10 +224,10 @@
     gap: 4px;
     margin: 0;
     padding: 10px 14px 14px;
-    background: rgba(14, 17, 22, 0.97);
+    background: var(--nav-bg-solid);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--line);
-    box-shadow: 0 22px 44px -22px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 22px 44px -22px var(--shadow-drop);
     transform: translateY(-8px);
     opacity: 0;
     visibility: hidden;
@@ -264,7 +269,7 @@
     padding: 78px 16px 28px;
     background: var(--bg-1);
     border-right: 1px solid var(--line);
-    box-shadow: 24px 0 60px -24px rgba(0, 0, 0, 0.85);
+    box-shadow: 24px 0 60px -24px var(--shadow-drop);
     overflow-y: auto;
     transform: translateX(-100%);
     transition: transform .26s cubic-bezier(.4, 0, .2, 1);
@@ -298,6 +303,11 @@
   /* declutter floating ornaments on small screens */
   .ornament {
     display: none;
+  }
+
+  /* calm the hero waveform canvas on small screens */
+  .hero-canvas {
+    opacity: 0.35;
   }
 
   /* hero typography scales down so long words don't overflow */

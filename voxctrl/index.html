@@ -13,6 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
+  <script src="/voxctrl/js/theme.js"></script>
   <link rel="stylesheet" href="/voxctrl/css/base.css" />
   <link rel="stylesheet" href="/voxctrl/css/components.css" />
   <link rel="stylesheet" href="/voxctrl/css/docs.css" />
@@ -40,6 +41,18 @@
     </div>
     <div class="nav-spacer"></div>
     <div class="nav-tools">
+      <button class="theme-toggle" aria-label="Toggle light / dark theme" title="Toggle theme">
+        <svg class="tt-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <circle cx="12" cy="12" r="4.4" />
+          <path
+            d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7" />
+        </svg>
+        <svg class="tt-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4a8.8 8.8 0 1 0 10.8 10.8z" />
+        </svg>
+      </button>
       <a class="btn-pill" id="gh-star" href="https://github.com/JRufer/voxctrl" target="_blank" rel="noreferrer">
         <span class="stars">&#9733;</span> <span id="gh-star-count">&#x2026;</span>
       </a>
@@ -50,6 +63,7 @@
 
   <!-- ── HERO ── -->
   <section class="section hero">
+    <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
     <span class="ornament huge" style="top: 80px; left: -40px;">{ }</span>
     <span class="ornament huge" style="bottom: 40px; right: -20px;">⌘</span>
     <span class="ornament" style="top: 120px; right: 12%;">// io.voice → ∗</span>
@@ -595,17 +609,17 @@
             <div class="out">
               <b>→ editor</b>
               <span class="badge">remove_fillers</span><span class="badge">openai_rewrite</span>
-              <div style="margin-top:6px; color: var(--txt-0);">Schedule a meeting for Friday at 3:00 PM.</div>
+              <div style="margin-top:6px; color: var(--term-txt-0);">Schedule a meeting for Friday at 3:00 PM.</div>
             </div>
             <div class="out">
               <b>→ agent.in</b>
               <span class="badge">none</span>
-              <div style="margin-top:6px; color: var(--txt-0);">schedule a meeting for friday at three</div>
+              <div style="margin-top:6px; color: var(--term-txt-0);">schedule a meeting for friday at three</div>
             </div>
             <div class="out">
               <b>→ journal.md</b>
               <span class="badge">openai_rewrite only</span>
-              <div style="margin-top:6px; color: var(--txt-0);">- Schedule meeting · Fri 3pm</div>
+              <div style="margin-top:6px; color: var(--term-txt-0);">- Schedule meeting · Fri 3pm</div>
             </div>
           </div>
         </div>
@@ -909,7 +923,7 @@
             <li>Models: tiny → large-v3-turbo (GGUF)</li>
             <li>Default model: large-v3</li>
           </ul>
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
             <span style="font-family:var(--mono);font-size:11px;color:var(--txt-2);">Best accuracy (large-v3)</span>
             <div style="font-family:var(--mono);font-size:13px;color:var(--cyan-1);margin-top:4px;">~3.1 GB model · 1.5B
               params</div>
@@ -930,7 +944,7 @@
             <li>Enable: <code style="color:var(--cyan-1);font-family:var(--mono)">engine.backend = "moonshine"</code>
             </li>
           </ul>
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
             <span style="font-family:var(--mono);font-size:11px;color:var(--txt-2);">Streaming · low-latency</span>
             <div style="font-family:var(--mono);font-size:13px;color:var(--cyan-1);margin-top:4px;">base · tiny models
               available</div>

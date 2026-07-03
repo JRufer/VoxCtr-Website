@@ -1,7 +1,10 @@
 /* ═══════════════════════════════════════════════════════
    voxctrl — Component Styles
-   Hero, console, privacy, pipeline, cards, tabs, code,
-   overlays, tables, metrics, target-fan, MCP, glyph rail
+   Hero (canvas waves + console), privacy, pipeline, cards,
+   tabs, code, overlays, tables, metrics, target-fan, MCP
+
+   Terminal-style surfaces (console, code, transcripts) use
+   --term-* tokens and deliberately stay dark in BOTH themes.
    ═══════════════════════════════════════════════════════ */
 
 /* ───────── hero ───────── */
@@ -9,6 +12,23 @@
   padding-top: 64px;
   padding-bottom: 48px;
   position: relative;
+  overflow: hidden;
+}
+
+/* full-bleed live waveform canvas behind the hero content */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 45%, #000 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 45%, #000 40%, transparent 85%);
+}
+
+.hero .shell {
+  z-index: 1;
 }
 
 .hero-grid {
@@ -30,62 +50,81 @@
   display: flex;
   align-items: center;
   gap: 0;
-  background: var(--bg-1);
-  border: 1px solid var(--line);
+  background: var(--term-1);
+  border: 1px solid var(--term-line);
   border-radius: 12px;
   font-family: var(--mono);
   font-size: 13px;
   overflow: hidden;
   max-width: 540px;
+  transition: border-color .25s, box-shadow .25s;
+}
+
+.install-strip:hover {
+  border-color: rgba(34, 212, 239, 0.35);
+  box-shadow: 0 0 24px -8px var(--cyan-glow);
 }
 
 .install-strip .prompt {
   padding: 12px 14px;
-  color: var(--cyan-2);
-  border-right: 1px solid var(--line);
+  color: var(--term-cyan-2);
+  border-right: 1px solid var(--term-line);
   user-select: none;
 }
 
 .install-strip .cmd {
   flex: 1;
   padding: 12px 14px;
-  color: var(--txt-0);
+  color: var(--term-txt-0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .install-strip .cmd .arg {
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
 }
 
 .install-strip .copy-btn {
   padding: 12px 14px;
   background: transparent;
   border: none;
-  color: var(--txt-2);
+  color: var(--term-txt-2);
   cursor: pointer;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--term-line);
   transition: all .15s;
   font-family: var(--mono);
   font-size: 12px;
 }
 
 .install-strip .copy-btn:hover {
-  color: var(--cyan-1);
-  background: rgba(34, 212, 239, 0.04);
+  color: var(--term-cyan-1);
+  background: rgba(34, 212, 239, 0.06);
 }
 
-/* ───────── hero visual: voxctrl console ───────── */
+/* ───────── hero visual: voxctrl console (always dark) ───────── */
 .console {
   position: relative;
-  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
-  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--term-2), var(--term-1));
+  border: 1px solid var(--term-line);
   border-radius: 18px;
   padding: 22px;
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(34, 212, 239, 0.06);
   overflow: hidden;
   font-family: var(--mono);
+  animation: consoleFloat 9s ease-in-out infinite;
+}
+
+@keyframes consoleFloat {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .console::before {
@@ -95,11 +134,13 @@
   border-radius: 18px;
   padding: 1px;
   background: linear-gradient(135deg, transparent 30%, rgba(34, 212, 239, 0.4), transparent 70%);
+  background-size: 300% 300%;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
   opacity: 0.6;
+  animation: gradientDrift 8s ease-in-out infinite;
 }
 
 .console-head {
@@ -107,12 +148,12 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 14px;
-  border-bottom: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--term-line);
   margin-bottom: 14px;
 }
 
 .console-head .title {
-  color: var(--txt-2);
+  color: var(--term-txt-2);
   font-size: 11.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -127,7 +168,7 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--bg-4);
+  background: var(--term-line);
   display: inline-block;
 }
 
@@ -142,7 +183,7 @@
 }
 
 .console-head .dots i:nth-child(3) {
-  background: var(--cyan-0);
+  background: var(--term-cyan-0);
   opacity: 0.7;
 }
 
@@ -150,7 +191,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--cyan-2);
+  color: var(--term-cyan-2);
   font-size: 11px;
 }
 
@@ -158,17 +199,17 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--cyan-0);
-  box-shadow: 0 0 8px var(--cyan-0);
+  background: var(--term-cyan-0);
+  box-shadow: 0 0 8px var(--term-cyan-0);
   animation: pulse 1.4s infinite;
 }
 
 .wave-stage {
   position: relative;
   height: 120px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
   border-radius: 10px;
-  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(34, 212, 239, 0.07), transparent 70%), var(--bg-0);
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(34, 212, 239, 0.07), transparent 70%), var(--term-0);
   overflow: hidden;
 }
 
@@ -190,7 +231,7 @@
 
 .wave-bars i {
   width: 3px;
-  background: linear-gradient(180deg, var(--cyan-1), var(--cyan-d));
+  background: linear-gradient(180deg, #7ae8f8, #0d8ea3);
   border-radius: 2px;
   box-shadow: 0 0 8px rgba(34, 212, 239, 0.6);
   display: inline-block;
@@ -200,12 +241,12 @@
   position: absolute;
   left: 12px;
   top: 10px;
-  color: var(--txt-2);
+  color: var(--term-txt-2);
   font-size: 10.5px;
 }
 
 .wave-meta b {
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
   font-weight: 500;
 }
 
@@ -221,7 +262,7 @@
   background: rgba(34, 212, 239, 0.06);
   border-radius: 999px;
   font-size: 10.5px;
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
 }
 
 .wave-target .glyph {
@@ -231,17 +272,17 @@
 .transcript {
   margin-top: 14px;
   padding: 14px;
-  background: var(--bg-0);
-  border: 1px dashed var(--line);
+  background: var(--term-0);
+  border: 1px dashed var(--term-line);
   border-radius: 10px;
   font-size: 12.5px;
-  color: var(--txt-1);
+  color: var(--term-txt-1);
   line-height: 1.7;
   min-height: 96px;
 }
 
 .transcript .lbl {
-  color: var(--cyan-2);
+  color: var(--term-cyan-2);
   font-size: 10.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -250,15 +291,17 @@
 }
 
 .transcript .raw {
-  color: var(--txt-2);
+  color: var(--term-txt-2);
+  transition: opacity .25s ease;
 }
 
 .transcript .out {
-  color: var(--txt-0);
+  color: var(--term-txt-0);
+  transition: opacity .25s ease;
 }
 
 .transcript .arrow {
-  color: var(--cyan-2);
+  color: var(--term-cyan-2);
   margin: 6px 0;
   display: block;
 }
@@ -267,7 +310,7 @@
   display: inline-block;
   width: 8px;
   height: 14px;
-  background: var(--cyan-1);
+  background: var(--term-cyan-1);
   margin-left: 2px;
   vertical-align: middle;
   animation: blink 1s steps(2) infinite;
@@ -285,20 +328,26 @@
   flex-direction: column;
   gap: 2px;
   padding: 9px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   font-size: 11px;
+  transition: border-color .25s, background .25s, transform .25s var(--ease-out);
+}
+
+.route-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 212, 239, 0.35);
 }
 
 .route-chip .glyph {
   font-family: var(--mono);
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
   font-size: 13px;
 }
 
 .route-chip .name {
-  color: var(--txt-1);
+  color: var(--term-txt-1);
 }
 
 .route-chip.is-active {
@@ -307,7 +356,7 @@
 }
 
 .route-chip.is-active .name {
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
 }
 
 /* ───────── privacy band ───────── */
@@ -351,6 +400,16 @@
   z-index: 1;
 }
 
+/* sonar rings pulsing out of the shield mark */
+.privacy-band .pb-mark::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 14px;
+  border: 1px solid var(--cyan-0);
+  animation: ripple 2.6s ease-out infinite;
+}
+
 .privacy-band .pb-body {
   position: relative;
   z-index: 1;
@@ -385,6 +444,12 @@
   gap: 4px;
   padding-left: 14px;
   border-left: 1px solid var(--line-2);
+  transition: border-color .3s, transform .3s var(--ease-out);
+}
+
+.pb-item:hover {
+  border-left-color: var(--cyan-0);
+  transform: translateX(3px);
 }
 
 .pb-item .pb-glyph {
@@ -427,11 +492,20 @@
   flex-shrink: 0;
 }
 
+.glyph-rail:hover .track {
+  animation-play-state: paused;
+}
+
 .glyph-rail .item {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  transition: color .2s;
+}
+
+.glyph-rail .item:hover {
+  color: var(--txt-1);
 }
 
 .glyph-rail .item b {
@@ -460,17 +534,37 @@
 .card {
   position: relative;
   padding: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, var(--tint-1), transparent), var(--bg-1);
   border: 1px solid var(--line);
   border-radius: 14px;
-  transition: all .25s;
+  transition: border-color .3s, transform .35s var(--ease-out), box-shadow .35s;
   overflow: hidden;
 }
 
 .card:hover {
   border-color: rgba(34, 212, 239, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px -20px rgba(34, 212, 239, 0.25);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
+}
+
+/* diagonal sheen sweeping over cards on hover */
+.card::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -80%;
+  width: 50%;
+  height: 220%;
+  background: linear-gradient(100deg, transparent, var(--cyan-glow), transparent);
+  transform: skewX(-18deg) translateX(0);
+  opacity: 0;
+  transition: transform .8s var(--ease-out), opacity .3s;
+  pointer-events: none;
+}
+
+.card:hover::after {
+  opacity: 0.35;
+  transform: skewX(-18deg) translateX(420%);
 }
 
 .card .corner {
@@ -495,7 +589,14 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   margin-bottom: 18px;
-  background: radial-gradient(ellipse at top, rgba(34, 212, 239, 0.12), rgba(34, 212, 239, 0));
+  background: radial-gradient(ellipse at top, rgba(34, 212, 239, 0.12), transparent);
+  transition: transform .35s var(--ease-spring), border-color .3s, box-shadow .3s;
+}
+
+.card:hover .glyph {
+  transform: scale(1.1) rotate(-5deg);
+  border-color: rgba(34, 212, 239, 0.4);
+  box-shadow: 0 0 18px -4px var(--cyan-glow);
 }
 
 .card .desc {
@@ -558,6 +659,13 @@
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 12.5px;
+  transition: border-color .3s, transform .3s var(--ease-out), box-shadow .3s;
+}
+
+.pl-block:hover {
+  border-color: rgba(34, 212, 239, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -16px var(--cyan-glow);
 }
 
 .pl-block .head {
@@ -612,7 +720,9 @@
   overflow: visible;
 }
 
-.arrow .dot {
+/* pulse of signal travelling along each pipeline arrow */
+.arrow::after {
+  content: '';
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -620,8 +730,13 @@
   box-shadow: 0 0 10px var(--cyan-0);
   position: absolute;
   top: 50%;
+  left: 0;
   transform: translate(-3px, -3px);
   animation: dataFlow 2.4s ease-in-out infinite;
+}
+
+.arrow .dot {
+  display: none;
 }
 
 /* ───────── routing tabs ───────── */
@@ -647,20 +762,21 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all .18s;
+  transition: all .25s var(--ease-out);
   background: transparent;
   white-space: nowrap;
 }
 
 .tab:hover {
   color: var(--txt-0);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--tint-2);
 }
 
 .tab.is-active {
   color: var(--cyan-1);
   background: rgba(34, 212, 239, 0.08);
   border-color: rgba(34, 212, 239, 0.2);
+  box-shadow: 0 4px 18px -8px var(--cyan-glow);
 }
 
 .tab .glyph {
@@ -677,17 +793,24 @@
   display: grid;
   grid-template-columns: 1fr 1.05fr;
   gap: 28px;
+  animation: panelIn .5s var(--ease-out) both;
 }
 
-/* ───────── code block ───────── */
+/* ───────── code block (always dark) ───────── */
 .code {
-  background: var(--bg-1);
-  border: 1px solid var(--line);
+  background: var(--term-1);
+  border: 1px solid var(--term-line);
   border-radius: 12px;
   font-family: var(--mono);
   font-size: 12.5px;
   overflow: hidden;
   position: relative;
+  transition: border-color .3s, box-shadow .3s;
+}
+
+.code:hover {
+  border-color: rgba(34, 212, 239, 0.25);
+  box-shadow: 0 16px 40px -24px var(--cyan-glow);
 }
 
 .code .head {
@@ -696,11 +819,11 @@
   justify-content: space-between;
   padding: 9px 14px;
   background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--term-line);
 }
 
 .code .head .lang {
-  color: var(--txt-2);
+  color: var(--term-txt-2);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -708,8 +831,8 @@
 
 .code .head .copy {
   background: transparent;
-  border: 1px solid var(--line);
-  color: var(--txt-2);
+  border: 1px solid var(--term-line);
+  color: var(--term-txt-2);
   padding: 3px 9px;
   border-radius: 6px;
   font-size: 10.5px;
@@ -718,7 +841,7 @@
 }
 
 .code .head .copy:hover {
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
   border-color: rgba(34, 212, 239, 0.3);
 }
 
@@ -727,7 +850,7 @@
   padding: 16px;
   overflow-x: auto;
   line-height: 1.65;
-  color: var(--txt-1);
+  color: var(--term-txt-1);
   font-size: 12.5px;
 }
 
@@ -744,16 +867,16 @@
 }
 
 .code .c {
-  color: var(--txt-3);
+  color: var(--term-txt-3);
   font-style: italic;
 }
 
 .code .t {
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
 }
 
 .code .p {
-  color: var(--txt-2);
+  color: var(--term-txt-2);
 }
 
 /* ───────── overlay gallery ───────── */
@@ -769,11 +892,18 @@
   overflow: hidden;
   background: var(--bg-1);
   position: relative;
+  transition: border-color .3s, transform .35s var(--ease-out), box-shadow .35s;
+}
+
+.overlay-card:hover {
+  border-color: rgba(34, 212, 239, 0.35);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
 }
 
 .overlay-card .frame {
   aspect-ratio: 16 / 9;
-  background: linear-gradient(rgba(34, 212, 239, 0.04), rgba(34, 212, 239, 0)),
+  background: linear-gradient(rgba(34, 212, 239, 0.04), transparent),
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.015) 0 6px, transparent 6px 12px), #050709;
   position: relative;
   overflow: hidden;
@@ -782,13 +912,18 @@
   justify-content: center;
 }
 
-.overlay-card .frame img {
+.overlay-card .frame img,
+.overlay-card .frame video {
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: auto;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
+  transition: transform .5s var(--ease-out);
+}
+
+.overlay-card:hover .frame img,
+.overlay-card:hover .frame video {
+  transform: scale(1.04);
 }
 
 .overlay-card .body {
@@ -822,14 +957,14 @@
   letter-spacing: 0.16em;
   background: rgba(232, 160, 25, 0.15);
   border: 1px solid rgba(232, 160, 25, 0.5);
-  color: var(--gold-1);
+  color: #f5c842;
   padding: 3px 8px;
   border-radius: 4px;
   z-index: 2;
-  text-shadow: 0 0 12px var(--gold-glow);
+  text-shadow: 0 0 12px rgba(232, 160, 25, 0.3);
 }
 
-/* ── gold accent utility — for heading spans ── */
+/* ── gold accent utility — animated waveform underline ── */
 .accent-gold {
   color: var(--gold-1);
   position: relative;
@@ -840,11 +975,13 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.06em;
-  height: 0.06em;
-  background: linear-gradient(to right, transparent, var(--gold-0), transparent);
-  filter: blur(2px);
-  animation: scanGlow 4s ease-in-out 2s infinite;
+  bottom: -0.14em;
+  height: 0.14em;
+  background-image: var(--wave-line-gold);
+  background-repeat: repeat-x;
+  background-size: 0.9em 0.14em;
+  opacity: 0.8;
+  animation: waveDrift 4s linear infinite reverse;
 }
 
 /* ───────── hardware table ───────── */
@@ -868,6 +1005,14 @@
   border-bottom: 1px solid var(--line);
 }
 
+.tbl tbody tr {
+  transition: background .2s;
+}
+
+.tbl tbody tr:hover {
+  background: var(--tint-2);
+}
+
 .tbl tr:last-child td {
   border-bottom: none;
 }
@@ -875,7 +1020,7 @@
 .tbl th {
   font-weight: 600;
   color: var(--txt-1);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-1);
   font-size: 11.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -908,7 +1053,7 @@
 }
 
 .tbl .pill-low {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--tint-2);
   color: var(--txt-1);
   border: 1px solid var(--line);
 }
@@ -932,6 +1077,13 @@
   padding: 16px 18px;
   background: var(--bg-1);
   position: relative;
+  transition: border-color .3s, transform .3s var(--ease-out), box-shadow .3s;
+}
+
+.mcp-tool:hover {
+  border-color: rgba(34, 212, 239, 0.3);
+  transform: translateX(4px);
+  box-shadow: 0 12px 32px -20px var(--cyan-glow);
 }
 
 .mcp-tool .h {
@@ -953,7 +1105,7 @@
   font-size: 10.5px;
   padding: 2px 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--tint-2);
   color: var(--txt-2);
   border: 1px solid var(--line);
 }
@@ -969,15 +1121,15 @@
   margin-top: 10px;
   font-family: var(--mono);
   font-size: 11.5px;
-  color: var(--txt-1);
+  color: var(--term-txt-1);
   padding: 8px 10px;
-  background: var(--bg-0);
+  background: var(--term-0);
   border-radius: 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
 }
 
 .mcp-tool .ex .arrow {
-  color: var(--cyan-2);
+  color: var(--term-cyan-2);
 }
 
 /* ───────── broker viz ───────── */
@@ -1014,6 +1166,11 @@
   text-align: center;
   border-right: 1px solid var(--line);
   position: relative;
+  transition: background .25s;
+}
+
+.metric:hover {
+  background: var(--tint-2);
 }
 
 .metric:last-child {
@@ -1072,17 +1229,17 @@
 
 .target-fan .src {
   padding: 14px;
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--term-line);
   border-radius: 10px;
-  background: var(--bg-0);
+  background: var(--term-0);
   margin-bottom: 16px;
   font-family: var(--mono);
   font-size: 12.5px;
-  color: var(--txt-1);
+  color: var(--term-txt-1);
 }
 
 .target-fan .src b {
-  color: var(--cyan-2);
+  color: var(--term-cyan-2);
   display: block;
   font-size: 10.5px;
   letter-spacing: 0.14em;
@@ -1106,16 +1263,22 @@
 .target-fan .out {
   padding: 11px 12px;
   border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--bg-0);
+  border: 1px solid var(--term-line);
+  background: var(--term-0);
   font-family: var(--mono);
   font-size: 11.5px;
-  color: var(--txt-1);
+  color: var(--term-txt-1);
+  transition: border-color .3s, transform .3s var(--ease-out);
+}
+
+.target-fan .out:hover {
+  border-color: rgba(34, 212, 239, 0.35);
+  transform: translateY(-2px);
 }
 
 .target-fan .out b {
   display: block;
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
   font-size: 11px;
   margin-bottom: 4px;
   font-weight: 500;
@@ -1127,7 +1290,7 @@
   padding: 1px 6px;
   border-radius: 3px;
   background: rgba(34, 212, 239, 0.08);
-  color: var(--cyan-1);
+  color: var(--term-cyan-1);
   border: 1px solid rgba(34, 212, 239, 0.2);
   margin-right: 4px;
 }

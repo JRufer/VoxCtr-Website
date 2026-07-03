@@ -54,8 +54,9 @@
 }
 
 .docs-side .item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--tint-2);
   color: var(--txt-0);
+  transform: translateX(2px);
 }
 
 .docs-side .item.is-active {
@@ -145,14 +146,14 @@
   border: 1px solid rgba(34, 212, 239, 0.15);
 }
 
-/* standalone code blocks (pre.code-inline) */
+/* standalone code blocks (pre.code-inline) — terminal surface, dark in both themes */
 .docs-content .code-inline,
 .code-inline {
   display: block;
   font-family: var(--mono);
-  background: var(--bg-1);
-  color: var(--txt-0);
-  border: 1px solid var(--line);
+  background: var(--term-1);
+  color: var(--term-txt-0);
+  border: 1px solid var(--term-line);
   border-radius: 10px;
   padding: 14px 16px;
   margin: 14px 0;
@@ -235,7 +236,7 @@
 }
 
 .docs-content .docs-table th {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-1);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -277,6 +278,8 @@
 
 .docs-content .docs-foot a:hover {
   border-color: rgba(34, 212, 239, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -18px var(--cyan-glow);
 }
 
 .docs-content .docs-foot a small {

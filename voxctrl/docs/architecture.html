@@ -12,6 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
+  <script src="/voxctrl/js/theme.js"></script>
   <link rel="stylesheet" href="/voxctrl/css/base.css" />
   <link rel="stylesheet" href="/voxctrl/css/components.css" />
   <link rel="stylesheet" href="/voxctrl/css/docs.css" />
@@ -39,6 +40,18 @@
     </div>
     <div class="nav-spacer"></div>
     <div class="nav-tools">
+      <button class="theme-toggle" aria-label="Toggle light / dark theme" title="Toggle theme">
+        <svg class="tt-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <circle cx="12" cy="12" r="4.4" />
+          <path
+            d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7" />
+        </svg>
+        <svg class="tt-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4a8.8 8.8 0 1 0 10.8 10.8z" />
+        </svg>
+      </button>
       <a class="btn-pill" id="gh-star" href="https://github.com/JRufer/voxctrl" target="_blank" rel="noreferrer">
         <span class="stars">&#9733;</span> <span id="gh-star-count">&#x2026;</span>
       </a>
