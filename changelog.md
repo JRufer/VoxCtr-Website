@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.0] - 2026-07-06
+
+Merge pull request #62 from JRufer/claude/moonlight-glibc-fix
+Fix Moonshine Linux release link error on older glibc
+
+---
+
 ## [v0.2.8] - 2026-07-06
 
 Merge pull request #62 from JRufer/claude/moonlight-glibc-fix
