@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.1] - 2026-07-12
+
+Bump the version up to 0.3.1
+
+---
+
 ## [v0.3.0] - 2026-07-06
 
 Merge pull request #62 from JRufer/claude/moonlight-glibc-fix
