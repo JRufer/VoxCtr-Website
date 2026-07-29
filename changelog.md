@@ -1,5 +1,29 @@
 # Changelog
 
+## [v0.3.2] - 2026-07-29
+
+Add a chat output target for conversational LLM endpoints (#67)
+Add a `chat` delivery type that POSTs to an OpenAI-compatible
+`/v1/chat/completions` endpoint, carries the running conversation as context,
+reads the reply back, and surfaces it — spoken via TTS, typed into the focused
+window, copied to the clipboard, or discarded. This makes VoxCtrl a voice front
+end for the same API Open WebUI talks to.
+The existing targets could not do this: `http` discards the response body and
+has nowhere for prior turns to accumulate, the OpenAI post-processing path is a
+stateless filter whose output replaces the dictated text, and `pipe` +
+`response_pipe` needs a bridge daemon that owns the history itself.
+Conversations are keyed by target id and held outside the target, because
+`OutputTargetRouter::reload` rebuilds every target when settings are saved.
+Each carries its own lock so a slow model on one target cannot stall another.
+A failed or empty completion rolls the unanswered turn back. A spoken reset
+phrase clears the conversation hands-free.
+Also fixes a pre-existing test-isolation race: `test_inject_target_success_and_failure`
+and `test_clipboard_target_linux_cli` mutate the process-global `PATH` and
+`WAYLAND_DISPLAY`, which made `test_clipboard_target_success` fail
+intermittently on headless CI depending on thread interleaving.
+
+---
+
 ## [v0.3.1] - 2026-07-12
 
 Bump the version up to 0.3.1
