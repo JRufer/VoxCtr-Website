@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.3] - 2026-08-14
+
+Merge pull request #69 from JRufer/claude/hotkey-listening-privacy-mi5bio
+Deliver global shortcuts through the XDG portal instead of reading the keyboard
+
+---
+
 ## [v0.3.2] - 2026-07-29
 
 Add a chat output target for conversational LLM endpoints (#67)
