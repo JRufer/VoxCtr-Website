@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hotkeys & Gestures — voxctrl Docs</title>
   <meta name="description"
-    content="voxctrl listens at the evdev layer for true global hotkeys — no window focus required, no compositor cooperation needed." />
+    content="voxctrl registers global hotkeys through the XDG GlobalShortcuts desktop portal — your desktop owns the key grab, so voxctrl never reads your keyboard." />
   <link rel="icon" href="/voxctrl/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -84,9 +84,122 @@
     <main class="docs-content" id="docsContent">
       <div class="crumbs">INPUT &amp; ROUTING <span>/</span> HOTKEYS</div>
       <h1>Hotkeys &amp; gestures</h1>
-      <p class="lede">voxctrl listens at the evdev layer on Linux for true global hotkeys — no window focus required,
-        no
-        compositor cooperation needed. On Windows, Win32 low-level keyboard hooks are used.</p>
+      <p class="lede">voxctrl listens for global shortcuts that work regardless of which application has focus. On
+        Linux this happens through the <strong>XDG desktop portal</strong>, so <strong>voxctrl does not read your
+          keyboard</strong> — your desktop owns the key grab and tells voxctrl exactly one thing: that its own
+        shortcut fired. On Windows, Win32 low-level keyboard hooks are used, which is the only mechanism the platform
+        offers for this kind of shortcut.</p>
+
+      <div class="note"><span class="icon">ⓘ</span> This is a change from earlier voxctrl versions, which read
+        <code>/dev/input/event*</code> directly and required a udev rule granting keyboard-wide access. See
+        <a href="#why-this-changed">why this changed</a> below.</div>
+
+      <h2>How shortcuts reach voxctrl</h2>
+      <p>Two backends are available on Linux. The portal is the default and is used whenever your desktop supports
+        it; the evdev path only ever engages as a fallback, and only if your system already allows the process to
+        read input devices — voxctrl never grants itself that access.</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Portal (default)</th>
+            <th>evdev fallback</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Can see keystrokes in other apps</td>
+            <td><strong>No</strong></td>
+            <td>Yes, all of them</td>
+          </tr>
+          <tr>
+            <td>Needs a udev rule or <code>input</code> group</td>
+            <td><strong>No</strong></td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Needs any permission setup</td>
+            <td><strong>No</strong></td>
+            <td>Yes, and voxctrl will not do it for you</td>
+          </tr>
+          <tr>
+            <td>Who chooses the keys</td>
+            <td>You, through your desktop</td>
+            <td>You, in voxctrl</td>
+          </tr>
+          <tr>
+            <td>Works on Wayland</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Works on X11</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Works with no desktop (bare TTY)</td>
+            <td>No</td>
+            <td>Yes</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Settings → Hotkeys and the setup window both state which of these is in use, live. If it says your desktop
+        is handling the shortcuts, voxctrl is not reading your keyboard.</p>
+
+      <h3>Portal — <code>org.freedesktop.portal.GlobalShortcuts</code></h3>
+      <p>voxctrl declares its shortcuts as <em>preferred</em> triggers over D-Bus; your desktop decides what actually
+        binds — it may confirm with you, and it may assign different keys — and from then on sends
+        <code>Activated</code>/<code>Deactivated</code> events when the shortcut is pressed and released. No
+        permissions are required: nothing to install, no group to join, no rule to write, no logout. Supported by
+        KDE Plasma (5.27+), GNOME 48+, and Hyprland. Compositors without the interface — Sway and most other wlroots
+        compositors as of writing — fall through to the evdev fallback below.</p>
+      <div class="note"><span class="icon">!</span> <strong>KDE Plasma</strong> accepts voxctrl's shortcut
+        registration but, due to a confirmed upstream bug
+        (<a href="https://bugs.kde.org/show_bug.cgi?id=483639" target="_blank">bugs.kde.org #483639</a>), leaves
+        them <strong>unticked</strong> in System Settings → Shortcuts until you check the box yourself. There is no
+        API that reports whether this step is done, so voxctrl cannot complete it for you — when it detects the
+        portal + KDE combination, the Hotkeys tab shows a standing notice with a one-click <strong>Open Shortcut
+          Settings</strong> button that jumps straight to the right panel.</div>
+      <p>If the portal refuses the session, the app distinguishes a missing portal ("no shortcuts portal available")
+        from a refusal ("your desktop has one but declined the request") and shows the exact D-Bus error under
+        <strong>Portal reported:</strong> in the setup window.</p>
+
+      <h3>Linux evdev fallback</h3>
+      <p>Only used when the portal is unavailable, and only if your system already permits this process to read
+        input devices. In this mode voxctrl reads <code>/dev/input/event*</code> directly, so every keystroke on the
+        system passes through the process — but nothing is logged, stored, or transmitted. Key names live briefly in
+        memory and never cross into the UI layer or any network call, and the Hotkeys tab and setup window say so
+        in plain language rather than staying quiet about it. A specific keyboard can be pinned with
+        <code>audio.evdev_device</code> (e.g. <code>"/dev/input/event4"</code>); synthetic devices
+        (<code>uinput</code>, <code>XTEST</code>, anything named "virtual") are always skipped so voxctrl cannot
+        react to keystrokes it injects itself.</p>
+
+      <h3>Windows</h3>
+      <p>Uses the Win32 <code>SetWindowsHookEx</code> / <code>WH_KEYBOARD_LL</code> low-level keyboard hook. No
+        special permissions are required. Like the evdev fallback, this hook sees all keystrokes — that is the only
+        mechanism Windows offers for this kind of shortcut.</p>
+
+      <h2 id="why-this-changed">Why this changed</h2>
+      <p>Reading <code>/dev/input/event*</code> requires a udev rule tagging input devices with <code>uaccess</code>
+        (or membership of the <code>input</code> group). voxctrl used to install one during setup:</p>
+      <pre class="code-inline">SUBSYSTEM=="input", KERNEL=="event*", TAG+="uaccess"</pre>
+      <p>That rule isn't narrow — it grants <strong>every process running as you</strong> the ability to read
+        <strong>every keystroke on the system</strong>: a compromised <code>npm</code> postinstall script, any
+        Electron app, any shell one-liner. systemd's own defaults deliberately grant <code>uaccess</code> on input
+        devices to joysticks and nothing else, precisely to avoid this. A dictation app shouldn't be the reason your
+        machine's security posture changes, and it certainly shouldn't do it silently in a first-run wizard, so:</p>
+      <ul>
+        <li>voxctrl never writes that rule and never runs <code>usermod -aG input</code> — not at install, not on
+          first launch, not from any button in the UI</li>
+        <li>if your desktop has no shortcuts portal, voxctrl tells you at launch and explains the trade-off, rather
+          than quietly widening access</li>
+        <li>on a machine that still has the rule from an older version, the installer and uninstaller
+          <strong>remove</strong> it, so upgrading narrows access instead of leaving it wide open</li>
+      </ul>
+      <p>Administrator rights are still requested for one thing on Linux: installing host packages such as
+        <code>wtype</code> and <code>xdotool</code>, which type the transcription into your focused window. That
+        step touches no permissions.</p>
 
       <h2>Default bindings</h2>
       <table class="docs-table">
@@ -134,27 +247,37 @@
       <p>Double-tap and keep the key held down on the second tap to start recording; release the key to stop.
         Enforces <code>hold_threshold_ms</code> on the second press to distinguish from a standard double-tap, and
         has a 2-minute safety timeout.</p>
-      <h3>Chord</h3>
-      <p>Hold one or more base keys (e.g. <code>KEY_LEFTCTRL</code> + <code>KEY_LEFTALT</code>), then press a single
-        subkey trigger (e.g. <code>KEY_SPACE</code>) to start recording. Recording continues as long as the base keys
-        remain held, and stops as soon as any base key is released — releasing the subkey alone does not stop
-        recording. Useful for binding voice actions without colliding with desktop or application shortcuts.</p>
+      <div class="note"><span class="icon">ⓘ</span> The <code>chord</code> gesture (hold base keys, press a subkey to
+        start) has been removed — it couldn't be expressed as a system shortcut, since the portal has no concept of a
+        partially-held combo. Existing <code>chord</code> bindings aren't broken: on load they're converted to
+        <code>hold</code> using the keys already in <code>keys</code>, and the obsolete <code>subkey</code> field is
+        dropped the next time bindings are saved. Nothing needs to be edited by hand.</div>
+
+      <h2>What can be a shortcut</h2>
+      <p>An accelerator is any number of modifiers plus exactly one regular key — <code>Super+Space</code>,
+        <code>Ctrl+Alt+D</code>, and <code>F5</code> are all fine. Two shapes are not accelerators, and no desktop
+        can bind them: a lone modifier with nothing else (a bare double-tapped <code>Super</code> is the one that
+        catches people out), and two regular keys together (<code>A+B</code>). The key recorder in Settings →
+        Hotkeys refuses these while you're recording and explains why, rather than saving a binding that silently
+        never fires.</p>
 
       <h2>Conflict detection</h2>
       <p>The Settings UI checks for collisions as you record new keys:</p>
       <ul>
-        <li><strong>Exact duplicate</strong> — both gestures fire simultaneously</li>
+        <li><strong>Exact duplicate</strong> — same keys and same gesture; disable one</li>
         <li><strong>Superset shadowing</strong> — if one binding's keys are a subset of another's (e.g. Super+Space
           vs Ctrl+Super+Space), only the longer, more specific combo fires</li>
-        <li><strong>Double-tap overlap</strong> — double-tap key appears in a hold/toggle combo</li>
         <li><strong>Bare single key</strong> — non-modifier key alone intercepts every press</li>
       </ul>
+      <p><code>double_tap</code> and <code>double_tap_hold</code> on the same keys are <strong>not</strong> a
+        conflict — they're a supported pairing (a quick double-tap runs one, double-tap-and-hold runs the other), and
+        on the portal backend they're registered as a single system shortcut so your desktop is never asked to bind
+        the same keys twice.</p>
 
       <h2>Recording new bindings</h2>
       <p>Press the <strong>Bind</strong> button next to a key field. The button turns orange and shows "Recording…".
-        Press your keys. The display updates live as keys are held. Release — binding captured.</p>
-      <div class="note"><span class="icon">ⓘ</span> For Chord bindings the editor exposes two Bind fields: base keys
-        (held down) and subkey trigger (pressed once the base keys are held).</div>
+        Press your keys. The display updates live as keys are held. Release — binding captured. This capture happens
+        inside voxctrl's own focused window using ordinary browser key events — it is not a global listener.</p>
 
       <h2>Configuration</h2>
       <p>The full schema for <code>~/.config/voxctrl/bindings.toml</code> with one binding per gesture type:</p>
@@ -175,12 +298,13 @@ target_ids = ["hermes"]
 tap_ms    = 250
 
 [[binding]]
-id        = "chord_dictate"
-label     = "Chord Dictation"
-keys      = ["KEY_LEFTCTRL", "KEY_LEFTMETA"]
-subkey    = "KEY_Z"
-gesture   = "chord"
-target_ids = ["default"]</pre>
+id        = "journal_hold"
+label     = "Journal (Double-tap &amp; Hold)"
+keys      = ["KEY_LEFTMETA", "KEY_SPACE"]
+gesture   = "double_tap_hold"
+target_ids = ["journal"]
+tap_ms    = 300
+hold_threshold_ms = 200</pre>
       <p>Other fields: <code>target_id</code> (legacy singular target, resolved when <code>target_ids</code> is
         empty) and <code>disabled</code> (default <code>false</code>, disables a binding without removing it). LLM
         rewriting per binding is configured with the <code>openai_enabled</code>, <code>openai_model</code>,
@@ -211,11 +335,6 @@ target_ids = ["default"]</pre>
           <tr>
             <td><code>double_tap_hold</code></td>
             <td>Double-tap and keep held on the second press to start; release to stop</td>
-          </tr>
-          <tr>
-            <td><code>chord</code></td>
-            <td>Hold the base <code>keys</code> and press the <code>subkey</code> trigger to start; release any base
-              key to stop</td>
           </tr>
         </tbody>
       </table>
@@ -267,7 +386,7 @@ target_ids = ["default"]</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

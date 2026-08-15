@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link is-active" href="/voxctrl/">Overview</a>
@@ -134,13 +134,13 @@
   <div class="shell">
     <div class="glyph-rail">
       <div class="track">
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>xdg-portal</b></span><span class="item">↯ <b>whisper</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
         <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
         <span class="item">∗ <b>vulkan</b></span><span class="item">▣ <b>cuda</b></span>
         <span class="item">⌬ <b>wayland</b></span><span class="item">◇ <b>x11</b></span>
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>xdg-portal</b></span><span class="item">↯ <b>whisper</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
         <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
@@ -218,6 +218,61 @@
     </div>
   </section>
 
+  <!-- ── local security ── -->
+  <section class="section section-bordered" id="security" style="padding: 64px 0;">
+    <div class="shell">
+      <div class="privacy-band fade-up">
+        <div class="pb-mark">
+          <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.4"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="10" y="21" width="28" height="20" rx="3" />
+            <path d="M16 21 V14 a8 8 0 0 1 16 0 v7" />
+            <circle cx="24" cy="30" r="2.6" fill="currentColor" stroke="none" />
+            <path d="M24 32.6 V36" />
+          </svg>
+        </div>
+        <div class="pb-body">
+          <span class="eyebrow" style="color: var(--cyan-1); margin-bottom: 6px;">// local security &middot; how hotkeys
+            actually work</span>
+          <h2 class="pb-title">voxctrl does not read your keyboard.</h2>
+          <p class="pb-lead">
+            Global shortcuts used to mean one thing on Linux: a process reading every keystroke on the system from
+            <code style="color:var(--cyan-1);font-family:var(--mono);background:rgba(34,212,239,0.06);padding:1px 6px;border-radius:4px;">/dev/input/event*</code>.
+            voxctrl doesn't do that anymore. Shortcuts are registered with your desktop through the XDG
+            <code style="color:var(--cyan-1);font-family:var(--mono);background:rgba(34,212,239,0.06);padding:1px 6px;border-radius:4px;">GlobalShortcuts</code>
+            portal — your desktop owns the key grab, and it tells voxctrl exactly one thing: that its own shortcut
+            fired. voxctrl is never given what you type in your browser, your terminal, or your password manager,
+            because it is never handed the data in the first place.
+          </p>
+          <div class="pb-grid">
+            <div class="pb-item"><span class="pb-glyph">⛨</span><b>Your desktop owns the grab</b><span>voxctrl
+                declares a <em>preferred</em> key combo; the compositor decides what actually binds and sends only
+                <code style="font-family:var(--mono)">Activated</code>/<code
+                  style="font-family:var(--mono)">Deactivated</code> events back.</span></div>
+            <div class="pb-item"><span class="pb-glyph">⊘</span><b>No permissions to grant</b><span>No udev rule, no
+                <code style="font-family:var(--mono)">input</code> group, no logout or reboot. Installing voxctrl does
+                not change your machine's security posture.</span></div>
+            <div class="pb-item"><span class="pb-glyph">◉</span><b>Status shown live</b><span>Settings → Hotkeys tells
+                you, in plain language, exactly how shortcuts are reaching voxctrl — portal or fallback — and which
+                keys your desktop actually bound.</span></div>
+            <div class="pb-item"><span class="pb-glyph">↺</span><b>Old access is revoked, not just unused</b><span>If
+                an earlier voxctrl install left a udev rule granting keyboard-wide read access, the installer removes
+                it — upgrading narrows access instead of leaving it wide open.</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="muted fade-up" style="font-size: 13.5px; margin-top: 24px; max-width: 760px;">
+        The evdev path only ever runs if your compositor has no shortcuts portal <em>and</em> your system already
+        permits the process to read input devices — voxctrl never grants itself that access. Even then, nothing is
+        logged, stored, or transmitted: key names live briefly in memory and never cross into the UI layer or a
+        network call. Supported by KDE Plasma 5.27+, GNOME 48+, and Hyprland; on KDE specifically, a known upstream
+        bug leaves portal shortcuts registered but unticked until you open System Settings, so voxctrl detects this
+        and shows a one-click <b>Open Shortcut Settings</b> button rather than silently doing nothing.
+        <a href="/voxctrl/docs/hotkeys.html" style="color:var(--cyan-1);">Full detail in the hotkeys docs →</a>
+      </p>
+    </div>
+  </section>
+
   <!-- ── pipeline ── -->
   <section class="section section-bordered" id="pipeline">
     <div class="shell">
@@ -235,10 +290,11 @@
         <div class="pipeline-grid">
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>◉ INPUT</b><span>evdev</span></div>
+              <div class="head"><b>◉ INPUT</b><span>xdg-portal</span></div>
               <div class="row"><span>Hold</span><code>super+space</code></div>
               <div class="row"><span>Toggle</span><code>ctrl+super+space</code></div>
               <div class="row"><span>Double-tap</span><code>alt</code></div>
+              <div class="row"><span>Double-tap+hold</span><code>super</code></div>
             </div>
             <div class="pl-block">
               <div class="head"><b>↯ CAPTURE</b><span>vad</span></div>
@@ -319,12 +375,13 @@
           <span class="corner">01</span>
           <span class="glyph">⌁</span>
           <h3 class="h-card">Global hotkeys</h3>
-          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Hold, toggle,
-            or double-tap modes — each gesture mapped to a different output.</p>
+          <p class="desc">Shortcuts are registered through the XDG <code>GlobalShortcuts</code> desktop portal on
+            Linux (Wayland + X11) and Win32 hooks on Windows. Hold, toggle, double-tap, or double-tap &amp; hold —
+            each gesture mapped to a different output.</p>
           <ul>
+            <li>Your desktop owns the key grab — voxctrl never reads your keyboard</li>
+            <li>No udev rule, no <code>input</code> group, no permissions to grant</li>
             <li>Conflict detection at bind time</li>
-            <li>Bare-key bindings &amp; modifier chords</li>
-            <li>Per-binding gesture settings</li>
           </ul>
         </div>
         <div class="card"
@@ -934,12 +991,14 @@
           <a href="/voxctrl/">Overview</a>
           <a href="/voxctrl/docs/quickstart.html">Quickstart</a>
           <a href="/voxctrl/docs/mcp.html">MCP server</a>
+          <a href="/voxctrl/#security">Local security</a>
           <a href="/voxctrl/#hardware">Hardware</a>
           <a href="/voxctrl/#backends">Backends</a>
         </div>
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/hotkeys.html">Hotkeys</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
           <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
@@ -955,7 +1014,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

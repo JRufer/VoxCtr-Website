@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -213,7 +213,8 @@
           <tr>
             <td>evdev_device</td>
             <td>null</td>
-            <td>Linux evdev keyboard device path for hotkeys, e.g. "/dev/input/event4"</td>
+            <td>Pins a specific keyboard device for the evdev fallback listener, e.g. "/dev/input/event4" — only
+              relevant when the XDG shortcuts portal is unavailable; see <a href="hotkeys.html">Hotkeys</a></td>
           </tr>
           <tr>
             <td>noise_suppression</td>
@@ -545,12 +546,7 @@
           <tr>
             <td>gesture</td>
             <td>—</td>
-            <td>hold | toggle | double_tap | double_tap_hold | chord</td>
-          </tr>
-          <tr>
-            <td>subkey</td>
-            <td>—</td>
-            <td>Trigger key for the chord gesture, pressed after base keys are held</td>
+            <td>hold | toggle | double_tap | double_tap_hold</td>
           </tr>
           <tr>
             <td>hold_threshold_ms</td>
@@ -644,7 +640,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

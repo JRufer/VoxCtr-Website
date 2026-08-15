@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -184,28 +184,31 @@
       <pre class="code-inline">chmod +x VoxCtrl.AppImage
 ./VoxCtrl-x86_64.AppImage</pre>
 
-      <h3>System install (desktop entry, udev rules, input group)</h3>
-      <p>VoxCtrl supports two ways to set up system integration:</p>
+      <h3>System install (desktop entry &amp; helper packages)</h3>
+      <p>Global shortcuts go through the XDG desktop portal and need no permissions at all — VoxCtrl registers its own
+        <code>.desktop</code> entry and icon under <code>~/.local/share/</code> automatically on every Linux launch,
+        no privileges required. The installer exists for one thing beyond that: the helper packages
+        (<code>wtype</code> on Wayland, <code>xdotool</code> on X11) that type transcribed text into other windows.
+        VoxCtrl supports two ways to run it:</p>
       <ul>
         <li><strong>CLI mode:</strong> run the AppImage with the <code>--install</code> flag in a terminal — it prompts
           for your password via <code>sudo</code>:
           <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
         </li>
-        <li><strong>GUI mode:</strong> launch the AppImage normally. If hardware permissions are missing, a
-          diagnostics window appears automatically with a <strong>Setup System Integration</strong> button that
-          prompts for your password via <code>pkexec</code>.</li>
+        <li><strong>GUI mode:</strong> launch the AppImage normally. If a text-injection helper is missing, a setup
+          window appears with a button that prompts for your password via <code>pkexec</code> and installs it.</li>
       </ul>
       <p>The installer:</p>
       <ul>
         <li>Copies the app icon to <code>~/.local/share/icons/hicolor/128x128/apps/voxctrl.png</code></li>
         <li>Registers a <code>.desktop</code> launcher in <code>~/.local/share/applications/voxctrl.desktop</code></li>
-        <li>Creates udev rules at <code>/etc/udev/rules.d/99-voxctrl.rules</code> for <code>/dev/input</code> access
-          (required for global hotkeys)</li>
-        <li>Adds the current user to the <code>input</code> group</li>
+        <li>Installs <code>wtype</code> (Wayland) or <code>xdotool</code> (X11) for text injection, if missing</li>
+        <li><strong>Removes</strong> the udev rule and <code>input</code> group membership an older VoxCtrl version
+          may have left behind — see <a href="hotkeys.html#why-this-changed">why this changed</a></li>
       </ul>
-      <div class="note"><span class="icon">!</span> After running the installer, log out and back in (or reboot) for
-        the <code>input</code> group membership to take effect. Until then, global hotkeys will not work.
-      </div>
+      <div class="note"><span class="icon">ⓘ</span> <strong>The installer does not touch keyboard permissions, and
+          there is no step that does.</strong> Global shortcuts are handled entirely by your desktop's portal, so
+        nothing needs granting and no logout or reboot is required.</div>
 
       <h2>Option B: Windows</h2>
       <p>Download the Windows installer from GitHub Releases and run
@@ -261,12 +264,10 @@ npm run tauri build</pre>
 
       <h2>Permissions setup (Linux)</h2>
       <h3>Global hotkeys</h3>
-      <p>voxctrl uses evdev to listen for global keyboard events. Your user must be in the <code>input</code> group:</p>
-      <pre class="code-inline">sudo usermod -aG input $USER
-# Log out and back in
-
-# Verify:
-groups $USER | grep input</pre>
+      <p>None required. voxctrl registers shortcuts through the XDG <code>GlobalShortcuts</code> portal — your
+        desktop owns the key grab and voxctrl never reads raw keyboard input. See
+        <a href="hotkeys.html">Hotkeys &amp; gestures</a> for how this works and what the fallback path (only used
+        when your compositor has no portal, and only if the system already permits it) looks like.</p>
 
       <h3>Wayland text injection</h3>
       <p>For Wayland sessions, install <code>wtype</code>:</p>
@@ -290,9 +291,12 @@ sudo pacman -S xdotool</pre>
       <h2>Troubleshooting</h2>
       <h3>Hotkeys not working</h3>
       <ul>
-        <li>Check you are in the <code>input</code> group: <code>groups | grep input</code></li>
-        <li>Log out and back in after being added to the group</li>
-        <li>On some distros, the udev rule path differs — the built-in installer handles this automatically</li>
+        <li>Check Settings → Hotkeys — it states live whether the portal or the evdev fallback is active</li>
+        <li>On KDE Plasma, portal shortcuts are registered but left unticked in System Settings → Shortcuts due to a
+          <a href="https://bugs.kde.org/show_bug.cgi?id=483639" target="_blank">known upstream bug</a>; use the
+          <strong>Open Shortcut Settings</strong> button in the Hotkeys tab and tick the box</li>
+        <li>On a compositor with no shortcuts portal (e.g. Sway), voxctrl falls back to evdev only if your system
+          already grants the process input-device access — it will not request that access for you</li>
       </ul>
       <h3>No audio devices found</h3>
       <ul>
@@ -367,7 +371,7 @@ sudo pacman -S xdotool</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
