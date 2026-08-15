@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -93,20 +93,21 @@
           target="_blank">GitHub Releases</a>, make it executable, and run it:</p>
       <pre class="code-inline">chmod +x VoxCtrl.AppImage
 ./VoxCtrl-x86_64.AppImage</pre>
-      <p>To set up desktop integration and hardware permissions (udev rules, input group, desktop shortcut), run the
+      <p>To set up the desktop entry and text-injection helpers (<code>wtype</code>/<code>xdotool</code>), run the
         built-in installer:</p>
       <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
-      <p>You can also launch the AppImage normally — if hardware permissions are missing, a diagnostics window appears
-        automatically with a one-click <strong>Setup System Integration</strong> button that prompts for your password
-        via <code>pkexec</code>.</p>
+      <p>You can also launch the AppImage normally — if a helper package is missing, a setup window appears
+        automatically with a one-click button that prompts for your password via <code>pkexec</code>.</p>
       <p><strong>Windows:</strong> Download the installer from GitHub Releases and run it. WebView2
         is
         pre-installed on Windows 11; on Windows 10 it auto-downloads on first run.</p>
 
       <h2>2. Permissions (Linux)</h2>
-      <p>Global hotkeys require evdev access. The built-in installer adds you to the <code>input</code> group. <strong>Log
-          out and back in</strong> (or reboot) for the group change to take effect. On Windows, no special permissions
-        are required — hotkeys use Win32 hooks.</p>
+      <p><strong>None required for hotkeys.</strong> voxctrl registers global shortcuts through your desktop's XDG
+        <code>GlobalShortcuts</code> portal — your desktop owns the key grab, and voxctrl never reads your keyboard.
+        No udev rule, no <code>input</code> group, no logout. See <a href="hotkeys.html">Hotkeys &amp; gestures</a>
+        for the evdev fallback path used only on compositors without a portal. On Windows, no special permissions
+        are required either — hotkeys use Win32 hooks.</p>
 
       <h2>3. Download a model</h2>
       <p>On first launch, voxctrl opens the Settings window. Go to <strong>Settings → Engine</strong> and download a
@@ -133,7 +134,7 @@
         <li>Define <strong>routing targets</strong> in <code>~/.config/voxctrl/targets.toml</code> — 9 delivery types
           plus a <code>speak</code> TTS target</li>
         <li>Customize <strong>hotkeys</strong> in <code>~/.config/voxctrl/bindings.toml</code> — hold, toggle,
-          double-tap, double-tap &amp; hold, or chord gestures</li>
+          double-tap, or double-tap &amp; hold gestures</li>
         <li>Enable <strong>TTS</strong> — Settings → TTS → pick a Piper or Pocket-TTS voice → Download</li>
       </ul>
 
@@ -184,7 +185,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

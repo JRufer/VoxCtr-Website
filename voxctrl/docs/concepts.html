@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.3</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -91,7 +91,9 @@
       <h2>The five abstractions</h2>
       <h3>Binding</h3>
       <p>A hotkey gesture mapped to one or more targets. Specifies keys, gesture type (hold / toggle / double-tap /
-        double-tap &amp; hold / chord), and which named target(s) receive the transcript.</p>
+        double-tap &amp; hold), and which named target(s) receive the transcript. On Linux the keys are registered as
+        a preferred shortcut with your desktop's XDG portal — voxctrl never reads them directly; see
+        <a href="hotkeys.html">Hotkeys &amp; gestures</a>.</p>
       <h3>Target</h3>
       <p>A named output destination with its own delivery type and post-processing pipeline. There are nine delivery
         types — <code>inject</code>, <code>clipboard</code>, <code>exec</code>, <code>pipe</code>, <code>socket</code>,
@@ -175,7 +177,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.3 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
