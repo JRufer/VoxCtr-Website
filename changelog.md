@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.4] - 2026-08-28
+
+Update to V0.3.4
+
+---
+
 ## [v0.3.3] - 2026-08-14
 
 Merge pull request #69 from JRufer/claude/hotkey-listening-privacy-mi5bio
