@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -262,6 +262,16 @@
             <td>overlay_monitor</td>
             <td>"primary"</td>
             <td>"primary" or a specific monitor name</td>
+          </tr>
+          <tr>
+            <td>show_command_overlay</td>
+            <td>true</td>
+            <td>Show the ⚡ command pill when a voice command trigger is executed</td>
+          </tr>
+          <tr>
+            <td>command_overlay_duration_secs</td>
+            <td>3</td>
+            <td>How long the command pill stays on screen</td>
           </tr>
           <tr>
             <td>auto_show_settings</td>
@@ -526,8 +536,13 @@
         <code>http</code> (<code>http_url</code>, <code>http_method</code>), <code>webhook</code>
         (<code>webhook_url</code>, <code>webhook_secret</code>), <code>exec</code> (<code>command</code>),
         <code>socket</code> (<code>socket_unix</code> or <code>socket_host</code>/<code>socket_port</code>),
-        <code>pipe</code> (<code>pipe_path</code>), and <code>speak</code>. Any target can also set a
-        <code>response_pipe</code> FIFO path for TTS output.</p>
+        <code>pipe</code> (<code>pipe_path</code>), <code>dbus</code>, <code>mcp</code>, <code>speak</code>,
+        <code>command</code> (the voice command router — routes to any other target by its spoken name), and
+        <code>chat</code> (<code>chat_url</code>, <code>chat_model</code>, <code>chat_system_prompt</code>,
+        <code>chat_reply_mode</code>, <code>chat_max_history</code>, <code>chat_timeout_secs</code>,
+        <code>chat_reset_phrase</code>, <code>chat_api_key</code>). Any target can also set a
+        <code>response_pipe</code> FIFO path for TTS output. See <a href="routing.html">Routing &amp; targets</a> for
+        every field.</p>
 
       <h2>bindings.toml</h2>
       <p>Each hotkey is a <code>[[binding]]</code> block with <code>id</code>, <code>label</code>,
@@ -545,12 +560,8 @@
           <tr>
             <td>gesture</td>
             <td>—</td>
-            <td>hold | toggle | double_tap | double_tap_hold | chord</td>
-          </tr>
-          <tr>
-            <td>subkey</td>
-            <td>—</td>
-            <td>Trigger key for the chord gesture, pressed after base keys are held</td>
+            <td>hold | toggle | double_tap | double_tap_hold (legacy <code>chord</code> bindings load as
+              <code>hold</code>)</td>
           </tr>
           <tr>
             <td>hold_threshold_ms</td>
@@ -644,7 +655,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

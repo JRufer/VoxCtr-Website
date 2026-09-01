@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link is-active" href="/voxctrl/">Overview</a>
@@ -151,6 +151,82 @@
     </div>
   </div>
 
+  <!-- ── NEW: voice command routing ── -->
+  <section class="section section-bordered" id="commands">
+    <div class="shell">
+      <div class="per-target-grid">
+        <div class="fade-up">
+          <span class="eyebrow" style="color: var(--gold-1);"><span class="dot"></span> New in v0.3.6 · the Command
+            target</span>
+          <h2 class="h-section">Say <span class="accent-gold">where it goes.</span></h2>
+          <p class="lead">
+            One keybind. Every destination. Bind a single hotkey to the new <code
+              style="color:var(--cyan-1);font-family:var(--mono);background:rgba(34,212,239,0.06);padding:1px 6px;border-radius:4px;">command</code>
+            target, then call any other target by name — just say <strong style="color:var(--txt-0)">"VoxCtrl"</strong>
+            and the name of a target, followed by your text.
+          </p>
+          <ul style="list-style: none; padding: 0; margin-top: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Natural phrasing.</strong>
+                "VoxCtrl write to my notes…", "VoxCtrl send this to my journal…", "VoxCtrl clipboard…" — lead-in words
+                and punctuation are understood and stripped.</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Matches every target you
+                  have.</strong> Target IDs and labels are matched case-insensitively, longest name first — "Personal
+                Notes" wins over "Notes".</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Visual confirmation.</strong>
+                A purple ⚡ command pill pops over your screen showing the matched target and payload, so you know the
+                command was picked up.</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Safe fallback.</strong> No
+                "VoxCtrl" keyword, or no matching target? The text is injected into the focused window like normal
+                dictation. Nothing is lost.</span></li>
+          </ul>
+        </div>
+        <div class="console fade-up">
+          <div class="console-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="title">voxctrl · command router</span>
+            <span class="console-status"><span class="dot"></span> LISTENING</span>
+          </div>
+          <div class="transcript">
+            <span class="lbl">▸ you say</span>
+            <span class="raw">"VoxCtrl write to my notes. This is a great day."</span>
+            <span class="arrow">↳ trigger "voxctrl" &nbsp;·&nbsp; matched target: <b
+                style="color:#a855f7;">NOTES</b></span>
+            <span class="lbl">▸ ~/Documents/notes.md</span>
+            <span class="out">- 2026-09-01 · This is a great day.<span class="caret"></span></span>
+          </div>
+          <div class="transcript" style="border-top: 1px solid rgba(255,255,255,0.06);">
+            <span class="lbl">▸ you say</span>
+            <span class="raw">"VoxCtrl send this to Hermes: what's on my calendar?"</span>
+            <span class="arrow">↳ trigger "voxctrl" &nbsp;·&nbsp; matched target: <b
+                style="color:#a855f7;">HERMES AGENT</b></span>
+            <span class="lbl">▸ /tmp/hermes.in</span>
+            <span class="out">what's on my calendar?</span>
+          </div>
+          <div class="console-routes">
+            <div class="route-chip is-active"><span class="glyph" style="color:#a855f7;">⚡ command</span><span
+                class="name">Voice router</span></div>
+            <div class="route-chip"><span class="glyph">≡ file</span><span class="name">Notes</span></div>
+            <div class="route-chip"><span class="glyph">⇉ pipe</span><span class="name">Hermes Agent</span></div>
+            <div class="route-chip"><span class="glyph">⊹ clipboard</span><span class="name">Clipboard</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="code fade-up" style="margin-top: 28px; max-width: 640px;">
+        <div class="head"><span class="lang">~/.config/voxctrl/targets.toml</span><button class="copy"
+            data-copy="">⎘</button></div>
+        <pre><span class="c"># one binding of type command routes to everything else by voice</span>
+[[<span class="t">target</span>]]
+<span class="k">id</span>       = <span class="s">"cmd_router"</span>
+<span class="k">label</span>    = <span class="s">"Voice Command Router"</span>
+<span class="k">delivery</span> = <span class="s">"command"</span></pre>
+      </div>
+    </div>
+  </section>
+
   <!-- ── positioning ── -->
   <section class="section section-bordered">
     <div class="shell-narrow" style="text-align: center;">
@@ -170,7 +246,7 @@
           <div class="l">Output Targets</div>
         </div>
         <div class="metric">
-          <div class="v">9</div>
+          <div class="v">13</div>
           <div class="l">Delivery Types</div>
         </div>
         <div class="metric">
@@ -236,12 +312,12 @@
         <div class="pipeline-grid">
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>◉ INPUT</b><span>evdev</span></div>
+              <div class="head"><b>◉ INPUT</b><span>xdg portal</span></div>
               <div class="row"><span>Hold</span><code>super+space</code></div>
               <div class="row"><span>Toggle</span><code>ctrl+super+space</code></div>
-              <div class="row"><span>Double-tap</span><code>alt</code></div>
-              <div class="row"><span>Double-tap+hold</span><code>super</code></div>
-              <div class="row"><span>Chord</span><code>ctrl+super → z</code></div>
+              <div class="row"><span>Double-tap</span><code>alt+z</code></div>
+              <div class="row"><span>Double-tap+hold</span><code>super+z</code></div>
+              <div class="row"><span>Voice command</span><code>"voxctrl …"</code></div>
             </div>
             <div class="pl-block">
               <div class="head"><b>↯ CAPTURE</b><span>vad</span></div>
@@ -286,7 +362,8 @@
 
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>⊳ ROUTE</b><span>9 types</span></div>
+              <div class="head"><b>⊳ ROUTE</b><span>13 types</span></div>
+              <div class="row"><span>command</span><code>"voxctrl &lt;target&gt;"</code></div>
               <div class="row"><span>inject</span><code>at-spi2</code></div>
               <div class="row"><span>clipboard</span><code>wl-copy</code></div>
               <div class="row"><span>exec</span><code>shell=false</code></div>
@@ -295,7 +372,10 @@
               <div class="row"><span>file</span><code>append</code></div>
               <div class="row"><span>dbus</span><code>signal</code></div>
               <div class="row"><span>http</span><code>POST</code></div>
-              <div class="row"><span>webhook</span><code>POST + headers</code></div>
+              <div class="row"><span>webhook</span><code>POST + hmac</code></div>
+              <div class="row"><span>chat</span><code>LLM conversation</code></div>
+              <div class="row"><span>speak</span><code>TTS</code></div>
+              <div class="row"><span>mcp</span><code>response queue</code></div>
             </div>
             <div class="pl-block" style="background: linear-gradient(180deg, rgba(34,212,239,0.06), transparent);">
               <div class="head"><b>↺ RESPOND</b><span>loop</span></div>
@@ -321,13 +401,15 @@
         <div class="card">
           <span class="corner">01</span>
           <span class="glyph">⌁</span>
-          <h3 class="h-card">Global hotkeys</h3>
-          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Five gesture
-            types — hold, toggle, double-tap, double-tap &amp; hold, and chord — each mapped to a different output.</p>
+          <h3 class="h-card">Global hotkeys, without keylogging</h3>
+          <p class="desc">On Linux, shortcuts are delivered through the XDG desktop portal — your desktop owns the key
+            grab, so voxctrl never reads your keyboard. Four gesture types — hold, toggle, double-tap, and double-tap
+            &amp; hold — each mapped to a different output. Win32 hooks on Windows.</p>
           <ul>
+            <li>No udev rules, no <code style="color:var(--cyan-1);font-family:var(--mono)">input</code> group, no
+              permission setup</li>
             <li>Superset shadowing prevents combo conflicts</li>
-            <li>Bare-key bindings &amp; chord (base-keys + subkey) combos</li>
-            <li>Per-binding gesture settings</li>
+            <li>Native Mint (Cinnamon/MATE) shortcut integration &amp; evdev fallback</li>
           </ul>
         </div>
         <div class="card"
@@ -393,6 +475,34 @@
             <li>Ocean Wave (default) — tide-pool waves that rise with the mic level</li>
             <li>Voice Card — 20×6 LED VU matrix · Waveform — scrolling oscilloscope trace</li>
             <li>Pulse Ring, Mono Bars, Neon Spectrum, Retro Terminal, Analog VU</li>
+          </ul>
+        </div>
+        <div class="card"
+          style="border-color: rgba(168,85,247,0.45); background: linear-gradient(180deg, rgba(168,85,247,0.06), transparent 60%), var(--bg-1);">
+          <span class="corner">07</span>
+          <span class="glyph" style="color:#a855f7;">⚡</span>
+          <h3 class="h-card">Voice command routing <span
+              style="font-family:var(--mono);font-size:11px;color:var(--gold-1);vertical-align:middle;">NEW</span></h3>
+          <p class="desc">The <code style="color:#a855f7;font-family:var(--mono)">command</code> target turns one
+            keybind into all of them. Say "VoxCtrl" plus a target's name — <em>"VoxCtrl write to my notes. This is a
+              great day."</em> — and the rest of the utterance is routed there.</p>
+          <ul>
+            <li>Matches any target by ID or label, longest name first</li>
+            <li>Natural lead-ins understood: "send this to", "add this to", "put this into"</li>
+            <li>⚡ confirmation pill overlay · falls back to plain dictation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="corner">08</span>
+          <span class="glyph">⊳</span>
+          <h3 class="h-card">Conversational chat target</h3>
+          <p class="desc">The <code style="color:var(--cyan-1);font-family:var(--mono)">chat</code> target holds a
+            running conversation with any OpenAI-compatible endpoint — Ollama, llama.cpp, LM Studio, vLLM — and speaks,
+            types, or copies the model's reply.</p>
+          <ul>
+            <li>Context carried across turns · spoken reset phrase</li>
+            <li>Reply modes: speak (TTS), inject, clipboard, or none</li>
+            <li>History held in memory only — never written to disk</li>
           </ul>
         </div>
       </div>
@@ -675,7 +785,7 @@
       <h2 class="h-section fade-up">Eight overlay styles built-in. Switch instantly from Settings.</h2>
       <p class="lead fade-up" style="margin-bottom: 28px;">
         Every overlay shows an active-target indicator — so you always know where your speech is going,
-        before you say a word.
+        before you say a word. And when a voice command fires, a purple ⚡ pill confirms which target caught it.
       </p>
 
       <div class="overlays-row fade-up">
@@ -1042,7 +1152,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

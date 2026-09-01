@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link is-active" href="/voxctrl/">Overview</a>
@@ -44,7 +44,8 @@
         <span class="stars">&#9733;</span> <span id="gh-star-count">&#x2026;</span>
       </a>
     </div>
-    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    <button class="nav-toggle" aria-label="Toggle navigation"
+      aria-expanded="false"><span></span><span></span><span></span></button>
   </nav>
 
   <!-- ── HERO ── -->
@@ -114,7 +115,7 @@
           <div class="transcript">
             <span class="lbl">▸ raw input</span>
             <span class="raw" id="rawT">um, schedule a team sync, uh, for thursday at three p m</span>
-            <span class="arrow">↳ post-processing &nbsp;·&nbsp; strip_fillers + ollama_polish</span>
+            <span class="arrow">↳ post-processing &nbsp;·&nbsp; remove_fillers + openai_rewrite</span>
             <span class="lbl">▸ delivered</span>
             <span class="out" id="outT">Schedule a team sync for Thursday at 3:00 PM<span class="caret"></span></span>
           </div>
@@ -134,21 +135,97 @@
   <div class="shell">
     <div class="glyph-rail">
       <div class="track">
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper.cpp</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
-        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
+        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>openai-api</b></span>
         <span class="item">∗ <b>vulkan</b></span><span class="item">▣ <b>cuda</b></span>
         <span class="item">⌬ <b>wayland</b></span><span class="item">◇ <b>x11</b></span>
-        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper</b></span>
+        <span class="item">⌁ <b>evdev</b></span><span class="item">↯ <b>whisper.cpp</b></span>
         <span class="item">∷ <b>at-spi2</b></span><span class="item">⊕ <b>piper-tts</b></span>
         <span class="item">⇉ <b>fifo</b></span><span class="item">∴ <b>dbus</b></span>
-        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>ollama</b></span>
+        <span class="item">⊞ <b>mcp</b></span><span class="item">⊳ <b>openai-api</b></span>
         <span class="item">∗ <b>vulkan</b></span><span class="item">▣ <b>cuda</b></span>
         <span class="item">⌬ <b>wayland</b></span><span class="item">◇ <b>x11</b></span>
       </div>
     </div>
   </div>
+
+  <!-- ── NEW: voice command routing ── -->
+  <section class="section section-bordered" id="commands">
+    <div class="shell">
+      <div class="per-target-grid">
+        <div class="fade-up">
+          <span class="eyebrow" style="color: var(--gold-1);"><span class="dot"></span> New in v0.3.6 · the Command
+            target</span>
+          <h2 class="h-section">Say <span class="accent-gold">where it goes.</span></h2>
+          <p class="lead">
+            One keybind. Every destination. Bind a single hotkey to the new <code
+              style="color:var(--cyan-1);font-family:var(--mono);background:rgba(34,212,239,0.06);padding:1px 6px;border-radius:4px;">command</code>
+            target, then call any other target by name — just say <strong style="color:var(--txt-0)">"VoxCtrl"</strong>
+            and the name of a target, followed by your text.
+          </p>
+          <ul style="list-style: none; padding: 0; margin-top: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Natural phrasing.</strong>
+                "VoxCtrl write to my notes…", "VoxCtrl send this to my journal…", "VoxCtrl clipboard…" — lead-in words
+                and punctuation are understood and stripped.</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Matches every target you
+                  have.</strong> Target IDs and labels are matched case-insensitively, longest name first — "Personal
+                Notes" wins over "Notes".</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Visual confirmation.</strong>
+                A purple ⚡ command pill pops over your screen showing the matched target and payload, so you know the
+                command was picked up.</span></li>
+            <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
+                style="color:var(--gold-1);font-family:var(--mono)">»</span><span><strong>Safe fallback.</strong> No
+                "VoxCtrl" keyword, or no matching target? The text is injected into the focused window like normal
+                dictation. Nothing is lost.</span></li>
+          </ul>
+        </div>
+        <div class="console fade-up">
+          <div class="console-head">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="title">voxctrl · command router</span>
+            <span class="console-status"><span class="dot"></span> LISTENING</span>
+          </div>
+          <div class="transcript">
+            <span class="lbl">▸ you say</span>
+            <span class="raw">"VoxCtrl write to my notes. This is a great day."</span>
+            <span class="arrow">↳ trigger "voxctrl" &nbsp;·&nbsp; matched target: <b
+                style="color:#a855f7;">NOTES</b></span>
+            <span class="lbl">▸ ~/Documents/notes.md</span>
+            <span class="out">- 2026-09-01 · This is a great day.<span class="caret"></span></span>
+          </div>
+          <div class="transcript" style="border-top: 1px solid rgba(255,255,255,0.06);">
+            <span class="lbl">▸ you say</span>
+            <span class="raw">"VoxCtrl send this to Hermes: what's on my calendar?"</span>
+            <span class="arrow">↳ trigger "voxctrl" &nbsp;·&nbsp; matched target: <b
+                style="color:#a855f7;">HERMES AGENT</b></span>
+            <span class="lbl">▸ /tmp/hermes.in</span>
+            <span class="out">what's on my calendar?</span>
+          </div>
+          <div class="console-routes">
+            <div class="route-chip is-active"><span class="glyph" style="color:#a855f7;">⚡ command</span><span
+                class="name">Voice router</span></div>
+            <div class="route-chip"><span class="glyph">≡ file</span><span class="name">Notes</span></div>
+            <div class="route-chip"><span class="glyph">⇉ pipe</span><span class="name">Hermes Agent</span></div>
+            <div class="route-chip"><span class="glyph">⊹ clipboard</span><span class="name">Clipboard</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="code fade-up" style="margin-top: 28px; max-width: 640px;">
+        <div class="head"><span class="lang">~/.config/voxctrl/targets.toml</span><button class="copy"
+            data-copy="">⎘</button></div>
+        <pre><span class="c"># one binding of type command routes to everything else by voice</span>
+[[<span class="t">target</span>]]
+<span class="k">id</span>       = <span class="s">"cmd_router"</span>
+<span class="k">label</span>    = <span class="s">"Voice Command Router"</span>
+<span class="k">delivery</span> = <span class="s">"command"</span></pre>
+      </div>
+    </div>
+  </section>
 
   <!-- ── positioning ── -->
   <section class="section section-bordered">
@@ -169,7 +246,7 @@
           <div class="l">Output Targets</div>
         </div>
         <div class="metric">
-          <div class="v">9</div>
+          <div class="v">13</div>
           <div class="l">Delivery Types</div>
         </div>
         <div class="metric">
@@ -235,10 +312,12 @@
         <div class="pipeline-grid">
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>◉ INPUT</b><span>evdev</span></div>
+              <div class="head"><b>◉ INPUT</b><span>xdg portal</span></div>
               <div class="row"><span>Hold</span><code>super+space</code></div>
               <div class="row"><span>Toggle</span><code>ctrl+super+space</code></div>
-              <div class="row"><span>Double-tap</span><code>alt</code></div>
+              <div class="row"><span>Double-tap</span><code>alt+z</code></div>
+              <div class="row"><span>Double-tap+hold</span><code>super+z</code></div>
+              <div class="row"><span>Voice command</span><code>"voxctrl …"</code></div>
             </div>
             <div class="pl-block">
               <div class="head"><b>↯ CAPTURE</b><span>vad</span></div>
@@ -269,7 +348,7 @@
               <div class="row"><span>Snippets</span><code>"my email" ⟶ …</code></div>
               <div class="row"><span>Spoken punct</span><code>"period" ⟶ .</code></div>
               <div class="row"><span>Code mode</span><code>get_user.name</code></div>
-              <div class="row"><span>Ollama rewrite</span><code>llama3.2:1b</code></div>
+              <div class="row"><span>LLM rewrite</span><code>OpenAI-compatible API</code></div>
             </div>
           </div>
 
@@ -283,7 +362,8 @@
 
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>⊳ ROUTE</b><span>9 types</span></div>
+              <div class="head"><b>⊳ ROUTE</b><span>13 types</span></div>
+              <div class="row"><span>command</span><code>"voxctrl &lt;target&gt;"</code></div>
               <div class="row"><span>inject</span><code>at-spi2</code></div>
               <div class="row"><span>clipboard</span><code>wl-copy</code></div>
               <div class="row"><span>exec</span><code>shell=false</code></div>
@@ -292,12 +372,15 @@
               <div class="row"><span>file</span><code>append</code></div>
               <div class="row"><span>dbus</span><code>signal</code></div>
               <div class="row"><span>http</span><code>POST</code></div>
-              <div class="row"><span>webhook</span><code>POST + headers</code></div>
+              <div class="row"><span>webhook</span><code>POST + hmac</code></div>
+              <div class="row"><span>chat</span><code>LLM conversation</code></div>
+              <div class="row"><span>speak</span><code>TTS</code></div>
+              <div class="row"><span>mcp</span><code>response queue</code></div>
             </div>
             <div class="pl-block" style="background: linear-gradient(180deg, rgba(34,212,239,0.06), transparent);">
               <div class="head"><b>↺ RESPOND</b><span>loop</span></div>
               <div class="row"><span>FIFO listener</span><code>response_pipe</code></div>
-              <div class="row"><span>TTS engine</span><code>piper / espeak</code></div>
+              <div class="row"><span>TTS engine</span><code>piper / pocket-tts / espeak-ng</code></div>
             </div>
           </div>
         </div>
@@ -318,13 +401,15 @@
         <div class="card">
           <span class="corner">01</span>
           <span class="glyph">⌁</span>
-          <h3 class="h-card">Global hotkeys</h3>
-          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Hold, toggle,
-            or double-tap modes — each gesture mapped to a different output.</p>
+          <h3 class="h-card">Global hotkeys, without keylogging</h3>
+          <p class="desc">On Linux, shortcuts are delivered through the XDG desktop portal — your desktop owns the key
+            grab, so voxctrl never reads your keyboard. Four gesture types — hold, toggle, double-tap, and double-tap
+            &amp; hold — each mapped to a different output. Win32 hooks on Windows.</p>
           <ul>
-            <li>Conflict detection at bind time</li>
-            <li>Bare-key bindings &amp; modifier chords</li>
-            <li>Per-binding gesture settings</li>
+            <li>No udev rules, no <code style="color:var(--cyan-1);font-family:var(--mono)">input</code> group, no
+              permission setup</li>
+            <li>Superset shadowing prevents combo conflicts</li>
+            <li>Native Mint (Cinnamon/MATE) shortcut integration &amp; evdev fallback</li>
           </ul>
         </div>
         <div class="card"
@@ -343,13 +428,13 @@
         <div class="card">
           <span class="corner">03</span>
           <span class="glyph">∷</span>
-          <h3 class="h-card">AT-SPI2 native injection</h3>
-          <p class="desc">Insert text directly into widgets via the accessibility bus. No keystroke simulation, no
-            modifier conflicts, no IME headaches.</p>
+          <h3 class="h-card">AT-SPI2 context priming</h3>
+          <p class="desc">Reads the surrounding text from the focused widget via the accessibility bus and feeds it to
+            Whisper as an initial prompt — improving continuity with what's already on screen.</p>
           <ul>
-            <li>Reads 300 chars of context as initial_prompt</li>
+            <li>Surrounding text primes the Whisper initial prompt</li>
             <li>Auto code-mode for terminals &amp; IDEs</li>
-            <li>Fallback chain: wtype → portal → xdotool</li>
+            <li>Injection fallback chain: wtype → xdotool → clipboard+paste</li>
           </ul>
         </div>
         <div class="card">
@@ -370,24 +455,54 @@
           <span class="corner">05</span>
           <span class="glyph">⊕</span>
           <h3 class="h-card">Neural TTS &amp; loopback</h3>
-          <p class="desc">Piper (ONNX neural voices) for high-quality on-device speech, with espeak-ng as fallback.
-            Per-target response_pipe FIFOs let agents stream answers back as audio.</p>
+          <p class="desc">Piper (ONNX neural voices) or Pocket-TTS (Rust voice-cloning) for high-quality on-device
+            speech, with espeak-ng as a lightweight fallback. Per-target response_pipe FIFOs let agents stream answers
+            back as audio.</p>
           <ul>
-            <li>~11 English voices, in-app downloads</li>
+            <li>~11 Piper voices + 5 Pocket-TTS cloned voices, in-app downloads</li>
             <li>Configurable global stop key</li>
-            <li>Teal response overlay</li>
+            <li>"SYSTEM RESPONDING" speaking-pill overlay</li>
           </ul>
         </div>
         <div class="card">
           <span class="corner">06</span>
           <span class="glyph">⌬</span>
-          <h3 class="h-card">Four built-in overlay styles</h3>
-          <p class="desc">Blue Wave, Voice Card, Waveform, and Pulse — all Svelte 5 components bundled with the app.
-            Select in Settings → Visual tab. Routing badge included.</p>
+          <h3 class="h-card">Eight built-in overlay styles</h3>
+          <p class="desc">Ocean Wave, Voice Card, Waveform, Pulse Ring, Mono Bars, Neon Spectrum, Retro Terminal, and
+            Analog VU — rendered by a native Slint helper process. Select in Settings → Visual tab. Active-target
+            indicator included on every style.</p>
           <ul>
-            <li>Blue Wave (default) — animated ocean waves, reacts to audio level</li>
-            <li>Voice Card — 45-bar spectrum · Waveform — 48-bar oscilloscope</li>
-            <li>Pulse — pill-shaped with animated rings</li>
+            <li>Ocean Wave (default) — tide-pool waves that rise with the mic level</li>
+            <li>Voice Card — 20×6 LED VU matrix · Waveform — scrolling oscilloscope trace</li>
+            <li>Pulse Ring, Mono Bars, Neon Spectrum, Retro Terminal, Analog VU</li>
+          </ul>
+        </div>
+        <div class="card"
+          style="border-color: rgba(168,85,247,0.45); background: linear-gradient(180deg, rgba(168,85,247,0.06), transparent 60%), var(--bg-1);">
+          <span class="corner">07</span>
+          <span class="glyph" style="color:#a855f7;">⚡</span>
+          <h3 class="h-card">Voice command routing <span
+              style="font-family:var(--mono);font-size:11px;color:var(--gold-1);vertical-align:middle;">NEW</span></h3>
+          <p class="desc">The <code style="color:#a855f7;font-family:var(--mono)">command</code> target turns one
+            keybind into all of them. Say "VoxCtrl" plus a target's name — <em>"VoxCtrl write to my notes. This is a
+              great day."</em> — and the rest of the utterance is routed there.</p>
+          <ul>
+            <li>Matches any target by ID or label, longest name first</li>
+            <li>Natural lead-ins understood: "send this to", "add this to", "put this into"</li>
+            <li>⚡ confirmation pill overlay · falls back to plain dictation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="corner">08</span>
+          <span class="glyph">⊳</span>
+          <h3 class="h-card">Conversational chat target</h3>
+          <p class="desc">The <code style="color:var(--cyan-1);font-family:var(--mono)">chat</code> target holds a
+            running conversation with any OpenAI-compatible endpoint — Ollama, llama.cpp, LM Studio, vLLM — and speaks,
+            types, or copies the model's reply.</p>
+          <ul>
+            <li>Context carried across turns · spoken reset phrase</li>
+            <li>Reply modes: speak (TTS), inject, clipboard, or none</li>
+            <li>History held in memory only — never written to disk</li>
           </ul>
         </div>
       </div>
@@ -430,12 +545,12 @@
                 style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Reads surrounding text as Whisper
                 initial prompt via AT-SPI2</span></li>
             <li style="display:flex;gap:12px;align-items:baseline; font-size: 13.5px;"><span
-                style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Direct insertion via AT-SPI2 — no
-                keypress simulation</span></li>
+                style="color:var(--cyan-1);font-family:var(--mono)">»</span><span>Delivery via wtype/xdotool keystroke
+                injection, with clipboard+paste fallback</span></li>
           </ul>
         </div>
         <div class="code">
-          <div class="head"><span class="lang">~/.config/voxctrll/targets.toml</span><button class="copy"
+          <div class="head"><span class="lang">~/.config/voxctrl/targets.toml</span><button class="copy"
               data-copy="">⎘</button></div>
           <pre><span class="c"># IDE target — code mode + AT-SPI2 context</span>
 [[<span class="t">target</span>]]
@@ -481,7 +596,7 @@
           </ul>
         </div>
         <div class="code">
-          <div class="head"><span class="lang">~/.config/voxctrll/targets.toml</span><button class="copy"
+          <div class="head"><span class="lang">~/.config/voxctrl/targets.toml</span><button class="copy"
               data-copy="">⎘</button></div>
           <pre><span class="c"># bidirectional voice ⇄ agent</span>
 [[<span class="t">target</span>]]
@@ -526,7 +641,7 @@
           </ul>
         </div>
         <div class="code">
-          <div class="head"><span class="lang">~/.config/voxctrll/bindings.toml</span><button class="copy"
+          <div class="head"><span class="lang">~/.config/voxctrl/bindings.toml</span><button class="copy"
               data-copy="">⎘</button></div>
           <pre>[[<span class="t">binding</span>]]
 <span class="k">id</span>        = <span class="s">"dictate_hold"</span>
@@ -589,7 +704,7 @@
           <div class="outs">
             <div class="out">
               <b>→ editor</b>
-              <span class="badge">strip_fillers</span><span class="badge">ollama</span>
+              <span class="badge">remove_fillers</span><span class="badge">openai_rewrite</span>
               <div style="margin-top:6px; color: var(--txt-0);">Schedule a meeting for Friday at 3:00 PM.</div>
             </div>
             <div class="out">
@@ -599,7 +714,7 @@
             </div>
             <div class="out">
               <b>→ journal.md</b>
-              <span class="badge">ollama_only</span>
+              <span class="badge">openai_rewrite only</span>
               <div style="margin-top:6px; color: var(--txt-0);">- Schedule meeting · Fri 3pm</div>
             </div>
           </div>
@@ -653,7 +768,7 @@
       <span class="k">"command"</span>: <span class="s">"socat"</span>,
       <span class="k">"args"</span>: [
         <span class="s">"STDIO"</span>,
-        <span class="s">"UNIX-CONNECT:/tmp/voxctrll-mcp.sock"</span>
+        <span class="s">"UNIX-CONNECT:/tmp/voxctrl-mcp.sock"</span>
       ]
     }
   }
@@ -667,51 +782,131 @@
   <section class="section section-bordered">
     <div class="shell">
       <span class="eyebrow fade-up">// overlays</span>
-      <h2 class="h-section fade-up">Four overlay styles built-in. Switch instantly from Settings.</h2>
+      <h2 class="h-section fade-up">Eight overlay styles built-in. Switch instantly from Settings.</h2>
       <p class="lead fade-up" style="margin-bottom: 28px;">
-        Every overlay shows the routing indicator badge — so you always know where your speech is going,
-        before you say a word.
+        Every overlay shows an active-target indicator — so you always know where your speech is going,
+        before you say a word. And when a voice command fires, a purple ⚡ pill confirms which target caught it.
       </p>
 
       <div class="overlays-row fade-up">
         <div class="overlay-card featured">
-          <div class="frame"><img src="/voxctrl/assets/ocean_wave.png" alt="Blue Wave overlay (default)" /></div>
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Ocean Wave.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
           <div class="body">
             <div>
-              <div class="name">Blue Wave</div>
-              <div class="meta">default · animated waves</div>
+              <div class="name">Ocean Wave</div>
+              <div class="meta">default · tide-pool waves</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⊟</span>
           </div>
         </div>
         <div class="overlay-card">
-          <div class="frame"><img src="/voxctrl/assets/voice_card.png" alt="Voice Card overlay" /></div>
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Voice Card.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
           <div class="body">
             <div>
               <div class="name">Voice Card</div>
-              <div class="meta">bar-graph spectrum</div>
+              <div class="meta">20×6 LED VU matrix</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⊟</span>
           </div>
         </div>
         <div class="overlay-card">
-          <div class="frame"><img src="/voxctrl/assets/waveform.png" alt="Waveform overlay" /></div>
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Waveform.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
           <div class="body">
             <div>
               <div class="name">Waveform</div>
-              <div class="meta">48-bar oscilloscope</div>
+              <div class="meta">scrolling oscilloscope</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">⌇</span>
           </div>
         </div>
         <div class="overlay-card">
-          <div class="frame"><img src="/voxctrl/assets/pulse_ring.png" alt="Pulse overlay" /></div>
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Pulse Ring.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
           <div class="body">
             <div>
-              <div class="name">Pulse</div>
-              <div class="meta">animated rings · pill</div>
+              <div class="name">Pulse Ring</div>
+              <div class="meta">sonar sweep · target lock</div>
             </div>
             <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">◌</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Mono Bars.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="body">
+            <div>
+              <div class="name">Mono Bars</div>
+              <div class="meta">black &amp; white 5-bar meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▥</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Neon Spectrum.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="body">
+            <div>
+              <div class="name">Neon Spectrum</div>
+              <div class="meta">16-band equalizer</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▦</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Retro Terminal.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="body">
+            <div>
+              <div class="name">Retro Terminal</div>
+              <div class="meta">DOS-blue ASCII meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">▸</span>
+          </div>
+        </div>
+        <div class="overlay-card">
+          <div class="frame">
+            <video style="width: 100%; aspect-ratio: 16 / 12;" autoplay muted loop>
+              <source src="/voxctrl/assets/Analog VU.webm" type="video/webm">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="body">
+            <div>
+              <div class="name">Analog VU</div>
+              <div class="meta">vintage needle meter</div>
+            </div>
+            <span style="font-family:var(--mono); color: var(--cyan-1); font-size: 14px;">◔</span>
           </div>
         </div>
       </div>
@@ -747,7 +942,9 @@
               <td class="mono">whisper.cpp</td>
               <td class="mono">CUDA fp16</td>
               <td><span class="pill pill-good">near-instant</span></td>
-              <td class="muted" style="font-size:12.5px;">Auto-detected via <code
+              <td class="muted" style="font-size:12.5px;">Requires a CUDA-enabled build (<code
+                  style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,0.06);padding:1px 5px;border-radius:3px;">--features cuda</code>);
+                auto-detected via <code
                   style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,0.06);padding:1px 5px;border-radius:3px;">nvidia-smi</code>
               </td>
             </tr>
@@ -955,7 +1152,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

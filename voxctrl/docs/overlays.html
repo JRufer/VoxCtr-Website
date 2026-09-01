@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -214,6 +214,21 @@
       <p>While TTS is responding, a green "SYSTEM RESPONDING" pill slides up from the bottom of the overlay with a
         live mini-equalizer and the active target label, and slides back down when speech ends.</p>
 
+      <h2>Command trigger pill</h2>
+      <p>When a voice command fires (e.g. saying <em>"VoxCtrl notes Help me!"</em> — see
+        <a href="routing.html">Routing → Voice command routing</a>), a purple/indigo glassmorphism command pill slides
+        up from the bottom of the overlay window so you know the command was picked up:</p>
+      <ul>
+        <li><strong>Visuals</strong> — dark purple/indigo background with a glowing purple border and a flashing ⚡
+          lightning bolt icon</li>
+        <li><strong>Content</strong> — the executed command target name (e.g. <code>NOTES</code>) and a summary of
+          the text payload (<code>▸ Help me!</code>)</li>
+        <li><strong>Duration</strong> — auto-dismisses after a configurable duration (default 3 seconds, via
+          <code>ui.command_overlay_duration_secs</code>)</li>
+        <li><strong>Toggle</strong> — Settings → Visual &amp; Feedback → Show overlay on voice command trigger
+          (<code>ui.show_command_overlay</code>)</li>
+      </ul>
+
       <h2>How it works</h2>
       <p>The built-in overlay styles are rendered by a dedicated native helper process (<code>voxctrl-overlay</code>,
         built with <a href="https://slint.dev" target="_blank" rel="noreferrer">Slint</a>) in a borderless,
@@ -267,6 +282,18 @@
             <td><code>"primary"</code></td>
             <td>Target display: <code>"primary"</code> or a specific monitor name (e.g. <code>"HDMI-1"</code>)</td>
           </tr>
+          <tr>
+            <td><code>ui.show_command_overlay</code></td>
+            <td>bool</td>
+            <td><code>true</code></td>
+            <td>Show the ⚡ command pill when a voice command trigger is executed</td>
+          </tr>
+          <tr>
+            <td><code>ui.command_overlay_duration_secs</code></td>
+            <td>number</td>
+            <td><code>3</code></td>
+            <td>How long the command pill stays on screen before auto-dismissing</td>
+          </tr>
         </tbody>
       </table>
 
@@ -317,7 +344,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
