@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.5] - 2026-09-01
+
+Bump version to 0.3.5 and update build artifacts
+
+---
+
 ## [v0.3.4] - 2026-08-28
 
 Update to V0.3.4
