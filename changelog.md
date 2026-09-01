@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.3.7] - 2026-09-01
+
+Merge pull request #70 from JRufer/feature/breeze-tts-2
+Feature
+Added the breeze TTS 2 engine
+drastically improved the speed of Piper TTS
+
+---
+
 ## [v0.3.6] - 2026-09-01
 
 Feature: Added an optional overlay when a command is executed to let the user know that the command was picked up.
