@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -154,8 +154,83 @@
             <td>Local TTS playback, no MCP/server required</td>
             <td>Hands-free voice replies</td>
           </tr>
+          <tr>
+            <td>command</td>
+            <td>Voice command router — "VoxCtrl &lt;target name&gt; &lt;text&gt;" routes to any other target by its
+              spoken name</td>
+            <td>One keybind for every destination</td>
+          </tr>
+          <tr>
+            <td>chat</td>
+            <td>Turn-by-turn conversation with an OpenAI-compatible <code>/v1/chat/completions</code> endpoint;
+              replies spoken, injected, or copied</td>
+            <td>Voice front end for local LLMs (Ollama, llama.cpp, LM Studio, vLLM)</td>
+          </tr>
         </tbody>
       </table>
+
+      <h2>Voice command routing (<code>command</code>)</h2>
+      <p>The <code>command</code> target — new in v0.3.6 — routes dictated text to <em>other</em> targets dynamically,
+        based on what you say. Bind one hotkey to a target with <code>delivery = "command"</code>, then call any
+        configured target by name with the <strong>"VoxCtrl"</strong> keyword:</p>
+      <pre class="code-inline">[[target]]
+id       = "cmd_router"
+label    = "Voice Command Router"
+delivery = "command"</pre>
+      <p>Say <em>"VoxCtrl write to my notes. This is a great day."</em> and the payload <em>"This is a great
+          day."</em> is delivered to your Notes target. How it resolves:</p>
+      <ul>
+        <li><strong>Trigger keyword</strong> — listens for "VoxCtrl", case-insensitively, in any of its spoken
+          shapes: <code>VoxCtrl</code>, <code>voxctrl</code>, <code>vox ctrl</code>, <code>vox-ctrl</code>, with
+          optional trailing punctuation (<code>VoxCtrl:</code>).</li>
+        <li><strong>Target resolution</strong> — the spoken name is matched against every configured target's
+          <code>id</code> and <code>label</code>, case-insensitively. Longer names take precedence, so "Personal
+          Notes" is matched before "Notes".</li>
+        <li><strong>Conversational lead-ins</strong> — natural phrases between the keyword and the target name are
+          understood: <em>"VoxCtrl send this to my notes…"</em>, <em>"VoxCtrl add this to my personal notes…"</em>,
+          <em>"VoxCtrl put this into my Notes: hello"</em>.</li>
+        <li><strong>Payload extraction</strong> — transition punctuation (<code>.</code> <code>:</code> <code>,</code>
+          <code>;</code>) and connector words ("saying", "that", "with text") are stripped, and the remaining text is
+          routed to the matched target with that target's own delivery and processing settings.</li>
+        <li><strong>Confirmation overlay</strong> — a purple/indigo ⚡ command pill appears over your screen showing
+          the matched target name and a payload summary, so you know the command was picked up. Configurable duration
+          (default 3s) via <code>ui.command_overlay_duration_secs</code>; toggle with
+          <code>ui.show_command_overlay</code>. See <a href="overlays.html">Overlays</a>.</li>
+        <li><strong>Auto-trigger detection</strong> — dictating with the "VoxCtrl" keyword activates voice command
+          routing even when the active hotkey's target is plain <code>inject</code> — you don't have to be on the
+          command binding for a spoken command to work.</li>
+        <li><strong>Fallback</strong> — if no "VoxCtrl" keyword is spoken, or no target matches, the text is injected
+          into the focused window exactly like the <code>inject</code> target. Nothing is dropped.</li>
+      </ul>
+
+      <h2>Conversational LLM (<code>chat</code>)</h2>
+      <p>The <code>chat</code> target sends each dictation as a turn in an ongoing conversation to an
+        OpenAI-compatible <code>/v1/chat/completions</code> endpoint — Ollama, llama.cpp, LM Studio, vLLM, or a remote
+        provider — and surfaces the model's reply. Unlike <code>http</code>, it <strong>reads the response</strong>
+        and <strong>remembers the exchange</strong>, so the model keeps context across turns.</p>
+      <pre class="code-inline">[[target]]
+id       = "hermes"
+label    = "Hermes"
+delivery = "chat"
+chat_url = "http://localhost:8080"          # /v1 suffix optional
+chat_model = "hermes-4-14b"
+chat_system_prompt = "You are a concise voice assistant."
+chat_reply_mode = "speak"                    # speak | inject | clipboard | none
+chat_max_history = 20                        # messages per turn; 0 = whole conversation
+chat_reset_phrase = "new conversation"       # optional; clears history instead of asking</pre>
+      <ul>
+        <li><strong>Reply handling</strong> — <code>speak</code> reads the reply aloud via TTS; <code>inject</code>
+          types it into the focused window; <code>clipboard</code> copies it; <code>none</code> runs the conversation
+          silently.</li>
+        <li><strong>Conversation lifetime</strong> — history is held in memory only, keyed by target id, and survives
+          saving settings. It is cleared by the spoken reset phrase, the <em>Reset conversation</em> button in the
+          target editor, or restarting voxctrl. It is never written to disk.</li>
+        <li><strong>Failure behaviour</strong> — a failed, timed-out, or empty completion rolls the unanswered turn
+          back so it is not resent on the next dictation.</li>
+        <li><strong>Optional fields</strong> — <code>chat_api_key</code> (sent as a Bearer token) and
+          <code>chat_timeout_secs</code> (default 120; local models can be slow to first token). Press <em>Fetch
+            models</em> in the target editor to list the server's model ids.</li>
+      </ul>
 
       <h2>Per-target processing</h2>
       <p>Each target's <code>[target.processing]</code> block can override the global post-processing settings.
@@ -207,6 +282,11 @@
       <p>A binding's <code>target_ids</code> array can list multiple targets — voxctrl delivers to each
         sequentially in order after a single recording session (e.g. inject into the focused window, then log to a
         file).</p>
+      <h3>One keybind, every destination</h3>
+      <p>Bind a single hotkey to a <code>delivery = "command"</code> target and address every other target by voice:
+        <em>"VoxCtrl write to my notes…"</em>, <em>"VoxCtrl clipboard…"</em>, <em>"VoxCtrl send this to Hermes…"</em>.
+        Anything without the keyword is injected as normal dictation, so the command router can safely be your
+        default binding.</p>
 
       <h2>Config file locations</h2>
       <ul>
@@ -264,7 +344,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

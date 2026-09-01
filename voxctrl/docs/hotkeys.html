@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hotkeys & Gestures — voxctrl Docs</title>
   <meta name="description"
-    content="voxctrl listens at the evdev layer for true global hotkeys — no window focus required, no compositor cooperation needed." />
+    content="voxctrl receives global shortcuts through the XDG desktop portal on Linux — your desktop owns the key grab, so voxctrl never reads your keyboard." />
   <link rel="icon" href="/voxctrl/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -84,9 +84,40 @@
     <main class="docs-content" id="docsContent">
       <div class="crumbs">INPUT &amp; ROUTING <span>/</span> HOTKEYS</div>
       <h1>Hotkeys &amp; gestures</h1>
-      <p class="lede">voxctrl listens at the evdev layer on Linux for true global hotkeys — no window focus required,
-        no
-        compositor cooperation needed. On Windows, Win32 low-level keyboard hooks are used.</p>
+      <p class="lede">On Linux, voxctrl receives global shortcuts through the XDG desktop portal — your desktop owns
+        the key grab and tells voxctrl only that its own shortcut fired, so <strong>voxctrl never reads your
+          keyboard</strong>. On Windows, Win32 low-level keyboard hooks are used.</p>
+
+      <h2>How shortcuts are delivered</h2>
+      <p>voxctrl talks to the <code>org.freedesktop.portal.GlobalShortcuts</code> portal over D-Bus. It registers
+        your configured keys as a <em>preferred</em> trigger; your desktop decides what to actually bind and sends
+        <code>Activated</code>/<code>Deactivated</code> events when the shortcut is pressed and released. That is the
+        entire data flow — voxctrl never sees what you type in your browser, terminal, or password manager, because
+        it is never given the data.</p>
+      <ul>
+        <li><strong>No permission setup.</strong> Nothing to install, no group to join, no udev rule to write, no
+          logout. Earlier versions read <code>/dev/input/event*</code> directly and needed a broad udev rule;
+          upgrading removes that rule, narrowing access rather than leaving it wide open.</li>
+        <li><strong>Supported desktops</strong> — KDE Plasma 5.27+, GNOME 48+, and Hyprland. On KDE, a confirmed
+          upstream bug (<a href="https://bugs.kde.org/show_bug.cgi?id=483639" target="_blank"
+            rel="noreferrer">#483639</a>) registers portal shortcuts <em>unticked</em> — enable them once under System
+          Settings → Shortcuts; the Hotkeys tab shows a standing notice with an <strong>Open Shortcut
+            Settings</strong> button.</li>
+        <li><strong>Linux Mint (Cinnamon / MATE)</strong> — no portal yet, so voxctrl offers a one-click "Add Mint
+          Native Shortcut" that binds a Mint system shortcut to voxctrl's <code>ai.voxctrl.Dictation</code> D-Bus
+          interface. Zero special permissions.</li>
+        <li><strong>evdev fallback</strong> — only used when no portal is available <em>and</em> your system already
+          allows the process to read input devices; voxctrl never grants itself that access, and the Hotkeys tab says
+          plainly which mode is in use.</li>
+      </ul>
+
+      <h2>What can be a shortcut</h2>
+      <p>A portal accelerator is <strong>any number of modifiers plus exactly one regular key</strong> —
+        <code>Super+Space</code>, <code>Ctrl+Alt+D</code>, and <code>F5</code> are all fine. Two shapes cannot be
+        bound by any desktop: <em>modifiers alone</em> (a lone Super, or Ctrl+Shift with nothing else) and <em>two
+          regular keys</em> (<code>A+B</code>). The key recorder in Settings → Hotkeys refuses these while you record
+        and says why, rather than saving something that silently never fires. On the evdev fallback and on Windows a
+        bare modifier genuinely works, and the recorder accepts it there with a note.</p>
 
       <h2>Default bindings</h2>
       <table class="docs-table">
@@ -110,8 +141,8 @@
           </tr>
           <tr>
             <td>Double-tap</td>
-            <td>Alt</td>
-            <td>Double-tap and hold Alt to record</td>
+            <td>Alt + Z</td>
+            <td>Two quick taps to start, two to stop</td>
           </tr>
         </tbody>
       </table>
@@ -127,18 +158,23 @@
       <p>Hands-free. Tap once to start, tap again to stop. The RMS noise gate also stops recording on silence if
         configured.</p>
       <h3>Double-tap</h3>
-      <p>Reuses an existing modifier without colliding with normal usage. Double-tapping <code>Alt</code> never fires
-        when <code>Alt</code> is held as part of <code>Alt+Tab</code>. Default tap window (<code>tap_ms</code>):
-        250ms.</p>
+      <p>Reuses a combo you already have without colliding with normal usage. Recording starts on the second press
+        within the <code>tap_ms</code> window (default 300ms). A first tap held longer than 600ms is not a tap at
+        all, so ordinary use of the keys never primes a phantom double-tap.</p>
       <h3>Double-tap-hold</h3>
       <p>Double-tap and keep the key held down on the second tap to start recording; release the key to stop.
-        Enforces <code>hold_threshold_ms</code> on the second press to distinguish from a standard double-tap, and
-        has a 2-minute safety timeout.</p>
-      <h3>Chord</h3>
-      <p>Hold one or more base keys (e.g. <code>KEY_LEFTCTRL</code> + <code>KEY_LEFTALT</code>), then press a single
-        subkey trigger (e.g. <code>KEY_SPACE</code>) to start recording. Recording continues as long as the base keys
-        remain held, and stops as soon as any base key is released — releasing the subkey alone does not stop
-        recording. Useful for binding voice actions without colliding with desktop or application shortcuts.</p>
+        Enforces <code>hold_threshold_ms</code> on the second press to distinguish it from a standard double-tap.
+        Releasing always stops the recording; a 2-minute safety timeout is a backstop for a release that never
+        arrives. <code>double_tap</code> and <code>double_tap_hold</code> on the <em>same keys</em> are a supported
+        pairing, not a conflict — a quick double-tap runs one, double-tap-and-hold runs the other.</p>
+      <div class="note"><span class="icon">ⓘ</span> The <code>chord</code> gesture has been removed — it could not be
+        expressed as a portal system shortcut. Existing chord bindings keep working: on load they are converted to
+        <code>hold</code> using their base keys, and the obsolete <code>subkey</code> field is dropped the next time
+        bindings are saved. Nothing needs editing by hand.</div>
+      <h3>Staggered release tolerance</h3>
+      <p>For <code>hold</code> and <code>double_tap_hold</code> gestures on multi-key combos, a 50ms grace window
+        covers fingers that don't lift off every key at the same instant — recording stops cleanly whether the
+        remaining keys come up quickly, late, or their key-up events are swallowed by the compositor.</p>
 
       <h2>Conflict detection</h2>
       <p>The Settings UI checks for collisions as you record new keys:</p>
@@ -153,8 +189,10 @@
       <h2>Recording new bindings</h2>
       <p>Press the <strong>Bind</strong> button next to a key field. The button turns orange and shows "Recording…".
         Press your keys. The display updates live as keys are held. Release — binding captured.</p>
-      <div class="note"><span class="icon">ⓘ</span> For Chord bindings the editor exposes two Bind fields: base keys
-        (held down) and subkey trigger (pressed once the base keys are held).</div>
+      <div class="note"><span class="icon">ⓘ</span> The recorder validates against the same accelerator rule the
+        portal enforces, nudges you while you are holding modifiers with no regular key yet, and shows the
+        accelerator your desktop will receive (e.g. <code>LOGO+space</code>) once the combination is valid. A refused
+        capture leaves your existing shortcut untouched, and re-binding never fires the old shortcut mid-recording.</div>
 
       <h2>Configuration</h2>
       <p>The full schema for <code>~/.config/voxctrl/bindings.toml</code> with one binding per gesture type:</p>
@@ -175,12 +213,11 @@ target_ids = ["hermes"]
 tap_ms    = 250
 
 [[binding]]
-id        = "chord_dictate"
-label     = "Chord Dictation"
-keys      = ["KEY_LEFTCTRL", "KEY_LEFTMETA"]
-subkey    = "KEY_Z"
-gesture   = "chord"
-target_ids = ["default"]</pre>
+id        = "voice_command"
+label     = "Voice Command Router"
+keys      = ["KEY_LEFTMETA", "KEY_C"]
+gesture   = "toggle"
+target_ids = ["cmd_router"]</pre>
       <p>Other fields: <code>target_id</code> (legacy singular target, resolved when <code>target_ids</code> is
         empty) and <code>disabled</code> (default <code>false</code>, disables a binding without removing it). LLM
         rewriting per binding is configured with the <code>openai_enabled</code>, <code>openai_model</code>,
@@ -213,9 +250,9 @@ target_ids = ["default"]</pre>
             <td>Double-tap and keep held on the second press to start; release to stop</td>
           </tr>
           <tr>
-            <td><code>chord</code></td>
-            <td>Hold the base <code>keys</code> and press the <code>subkey</code> trigger to start; release any base
-              key to stop</td>
+            <td><code>chord</code> <em>(removed)</em></td>
+            <td>Loaded as <code>hold</code> automatically; the <code>subkey</code> field is ignored and dropped on
+              the next save</td>
           </tr>
         </tbody>
       </table>
@@ -267,7 +304,7 @@ target_ids = ["default"]</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

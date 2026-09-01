@@ -32,7 +32,7 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.3.6</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
@@ -184,7 +184,7 @@
       <pre class="code-inline">chmod +x VoxCtrl.AppImage
 ./VoxCtrl-x86_64.AppImage</pre>
 
-      <h3>System install (desktop entry, udev rules, input group)</h3>
+      <h3>System install (desktop entry &amp; injection tools)</h3>
       <p>VoxCtrl supports two ways to set up system integration:</p>
       <ul>
         <li><strong>CLI mode:</strong> run the AppImage with the <code>--install</code> flag in a terminal — it prompts
@@ -199,12 +199,16 @@
       <ul>
         <li>Copies the app icon to <code>~/.local/share/icons/hicolor/128x128/apps/voxctrl.png</code></li>
         <li>Registers a <code>.desktop</code> launcher in <code>~/.local/share/applications/voxctrl.desktop</code></li>
-        <li>Creates udev rules at <code>/etc/udev/rules.d/99-voxctrl.rules</code> for <code>/dev/input</code> access
-          (required for global hotkeys)</li>
-        <li>Adds the current user to the <code>input</code> group</li>
+        <li>Installs host packages such as <code>wtype</code> and <code>xdotool</code>, which type the transcription
+          into your focused window</li>
+        <li><strong>Removes</strong> the udev rule (<code>/etc/udev/rules.d/99-voxctrl.rules</code>) left behind by
+          versions before v0.3.3 — global hotkeys now arrive through the XDG desktop portal, so VoxCtrl no longer
+          needs (or requests) access to your input devices</li>
       </ul>
-      <div class="note"><span class="icon">!</span> After running the installer, log out and back in (or reboot) for
-        the <code>input</code> group membership to take effect. Until then, global hotkeys will not work.
+      <div class="note"><span class="icon">ⓘ</span> No logout or reboot is needed — since v0.3.3 global hotkeys are
+        delivered through the XDG desktop portal, which requires no group membership or udev rules. If you upgraded
+        from an older version, drop yourself from the <code>input</code> group with
+        <code>sudo gpasswd -d $USER input</code> — VoxCtrl no longer needs it.
       </div>
 
       <h2>Option B: Windows</h2>
@@ -261,12 +265,11 @@ npm run tauri build</pre>
 
       <h2>Permissions setup (Linux)</h2>
       <h3>Global hotkeys</h3>
-      <p>voxctrl uses evdev to listen for global keyboard events. Your user must be in the <code>input</code> group:</p>
-      <pre class="code-inline">sudo usermod -aG input $USER
-# Log out and back in
-
-# Verify:
-groups $USER | grep input</pre>
+      <p>None needed. Shortcuts are delivered through the XDG <code>GlobalShortcuts</code> desktop portal — your
+        desktop owns the key grab, and voxctrl never reads your keyboard. Supported by KDE Plasma 5.27+, GNOME 48+,
+        and Hyprland; Linux Mint (Cinnamon/MATE) gets a native D-Bus shortcut integration instead. On systems with no
+        portal at all, voxctrl can fall back to evdev — but only if your system already grants that access; voxctrl
+        never sets it up itself. See <a href="hotkeys.html">Hotkeys &amp; gestures</a>.</p>
 
       <h3>Wayland text injection</h3>
       <p>For Wayland sessions, install <code>wtype</code>:</p>
@@ -290,9 +293,13 @@ sudo pacman -S xdotool</pre>
       <h2>Troubleshooting</h2>
       <h3>Hotkeys not working</h3>
       <ul>
-        <li>Check you are in the <code>input</code> group: <code>groups | grep input</code></li>
-        <li>Log out and back in after being added to the group</li>
-        <li>On some distros, the udev rule path differs — the built-in installer handles this automatically</li>
+        <li>On KDE Plasma, portal shortcuts are registered <em>unticked</em> by default (upstream bug) — enable them
+          once under System Settings → Shortcuts; the Hotkeys tab has an <strong>Open Shortcut Settings</strong>
+          button that takes you straight there</li>
+        <li>Check Settings → Hotkeys — it states live whether the portal or the evdev fallback is delivering your
+          shortcuts, and flags bindings your desktop refused to bind</li>
+        <li>A portal shortcut must be modifiers plus exactly one regular key — a lone modifier (e.g. bare Super)
+          cannot be bound; edit the binding and add a regular key</li>
       </ul>
       <h3>No audio devices found</h3>
       <ul>
@@ -367,7 +374,7 @@ sudo pacman -S xdotool</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.3.6 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
