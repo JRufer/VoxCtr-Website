@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.6] - 2026-09-01
+
+Feature: Added an optional overlay when a command is executed to let the user know that the command was picked up.
+Updated version to v0.3.6
+
+---
+
 ## [v0.3.5] - 2026-09-01
 
 Bump version to 0.3.5 and update build artifacts
