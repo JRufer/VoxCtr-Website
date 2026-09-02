@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.8] - 2026-09-02
+
+Merge pull request #76 from JRufer/claude/voxctrl-appimage-linux-compat-27p23v
+AppImage: start on stock Mint 21 / Ubuntu 22.04 desktops; release 0.3.8
+
+---
+
 ## [v0.3.7] - 2026-09-01
 
 Merge pull request #70 from JRufer/feature/breeze-tts-2
