@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.9] - 2026-09-03
+
+Merge pull request #78: XInput 2.1 requirement and 0.3.9 release
+Require XInput 2.1 for the X11 backend, and release 0.3.9
+
+---
+
 ## [v0.3.8] - 2026-09-02
 
 Merge pull request #76 from JRufer/claude/voxctrl-appimage-linux-compat-27p23v
