@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.10] - 2026-09-03
+
+Merge pull request #79: fix X11 event selection, release 0.3.10
+Split the X11 event selection, or the server refuses every key (0.3.10)
+
+---
+
 ## [v0.3.9] - 2026-09-03
 
 Merge pull request #78: XInput 2.1 requirement and 0.3.9 release
