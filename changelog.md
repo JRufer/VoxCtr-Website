@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.4.0] - 2026-09-04
+
+Merge pull request #80: v0.4.0 — first-run wizard, self-updating, Output Commands
+Releases 0.4.0: a seven-step first-run setup wizard, self-updating from
+GitHub releases with checksum verification, Output Targets renamed to
+Output Commands with the spoken form explained in-app, and a settings
+audit that either implemented or removed every control that did nothing.
+Windows release builds are paused; the job is commented out, not removed.
+
+---
+
 ## [v0.3.10] - 2026-09-03
 
 Merge pull request #79: fix X11 event selection, release 0.3.10
