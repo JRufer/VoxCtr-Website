@@ -1,47 +1,68 @@
-# voxctrl — Intelligent Audio Interface for Linux
+# voxctrl — programmable voice input broker for Linux & Windows
 # llms.txt — structured index for AI agent discovery
 # https://llmstxt.org/
 
-> voxctrl is a programmable voice input broker for Linux. It transcribes speech locally using
-> faster-whisper (NVIDIA CUDA), whisper.cpp (AMD/Intel Vulkan), or Moonshine (streaming ONNX, CPU/edge),
-> routes the transcript to
-> named output targets (inject, exec, pipe, socket, file, dbus), applies per-target AI post-processing
-> pipelines via local Ollama models, and exposes a built-in MCP server so any MCP-capable AI agent
-> (Claude, Cursor, Zed) can use the microphone and TTS as first-class tools.
+> voxctrl transcribes speech entirely on-device using whisper.cpp (CUDA / Vulkan / CPU) or
+> Moonshine (streaming ONNX, CPU-native), routes the transcript to named Output Commands
+> (inject, clipboard, exec, pipe, socket, file, dbus, http, webhook, mcp, speak, chat, command),
+> applies per-command post-processing including rewriting through any OpenAI-compatible API,
+> and exposes a built-in MCP server so any MCP-capable agent (Claude, Cursor, Zed) can use the
+> microphone and TTS as first-class tools. Nothing is sent anywhere you did not configure.
 
 ## Quick Facts
 
+- Version: 0.4.0
 - License: MIT
-- Platform: Linux (Wayland-native; X11 supported)
-- Language: Python, PyQt6
+- Platform: Linux (Wayland-native; X11 supported) and Windows 10/11
+- Language: Rust (Tauri backend, workspace of 12 crates) + Svelte frontend
 - Repository: https://github.com/JRufer/voxctrl
-- MCP Server: Unix domain socket at /tmp/voxctrl-mcp.sock (JSON-RPC 2.0)
-- Config: ~/.config/voxctrl/config.json, targets.toml, bindings.toml
+- MCP server: Unix socket /tmp/voxctrl-mcp.sock (Linux), named pipe \\.\pipe\voxctrl-mcp (Windows); JSON-RPC 2.0
+- Config: ~/.config/voxctrl/{config.toml, targets.toml, bindings.toml}
 
 ## Key Capabilities
 
-1. **Local transcription** — faster-whisper, whisper.cpp, or Moonshine; auto-selects backend from GPU/hardware
-2. **Programmable routing** — 7 output target types (inject/clipboard/exec/pipe/socket/file/dbus)
-3. **Per-target AI pipelines** — strip_fillers, ollama_prompt, code_mode, snippets, spoken_punct
-4. **MCP server** — transcribe_voice, speak_text, get_status tools over Unix socket
-5. **Code Mode** — IDE-aware voice dictation; camelCase/snake_case spoken identifier formatting
-6. **AT-SPI2 injection** — direct text insertion into focused widgets; reads context before cursor
-7. **Neural TTS** — Piper on-device speech synthesis; 8 curated English voice models
-8. **Visual overlays** — Voice Card (default), Waveform, Pulse Circle; custom Python plugins
+1. **First-run setup wizard** — seven steps (welcome, engine, hotkey, overlay, live test, voice, done);
+   each choice written to disk as it is made. Reopen with `voxctrl --setup` or Settings → General.
+2. **Local transcription** — whisper.cpp (five model sizes, tiny is the default) or Moonshine (tiny, base).
+   `engine.whisper_cpp.device = auto|cuda|vulkan|cpu`.
+3. **Programmable routing** — 13 delivery types: inject, clipboard, exec, pipe, socket, file, dbus,
+   http, webhook, mcp, speak, chat, command.
+4. **Voice Command Router** — say "VoxCtrl <command name> <text>" mid-dictation to reroute that
+   utterance; natural lead-ins accepted; longest command name wins.
+5. **Per-command processing** — remove_fillers, spoken_punctuation, auto_format_lists, code_mode,
+   snippets, and LLM rewriting against any OpenAI-compatible endpoint.
+6. **MCP server** — transcribe_voice, speak_text, get_status.
+7. **Neural TTS** — Breeze-TTS-2, Pocket-TTS, Piper, Inflect-Micro-v2, eSpeak-NG. All local.
+8. **Visual overlays** — eight styles: Ocean Wave (default), Voice Card, Waveform, Pulse Ring,
+   Mono Bars, Neon Spectrum, Retro Terminal, Analog VU; or disabled.
+9. **Self-updating** — checks GitHub releases on launch, verifies the download against the published
+   checksum, replaces itself and restarts. One unauthenticated request; off with one tick in Settings.
+
+## Privacy Model
+
+- Global shortcuts are registered through the XDG GlobalShortcuts portal. voxctrl never reads the
+  keyboard; the desktop owns the key grab and reports only that voxctrl's own shortcut fired.
+- No udev rule, no `input` group, nothing to grant. Versions before 0.3.3 installed such a rule;
+  the installer now removes it if present and never creates it.
+- No telemetry, no analytics, no crash reporters. The only self-initiated network request is the
+  update check, which carries no identifier and can be turned off.
+- Air-gapped ready once models are downloaded.
 
 ## MCP Integration
 
 Server name: voxctrl
-Socket: /tmp/voxctrl-mcp.sock
+Socket: /tmp/voxctrl-mcp.sock (Linux) · \\.\pipe\voxctrl-mcp (Windows)
 Protocol: JSON-RPC 2.0, newline-delimited
 
 ### Tools
 
-| Tool               | Signature                           | Description                                                  |
-|--------------------|-------------------------------------|--------------------------------------------------------------|
-| transcribe_voice   | timeout_seconds?: number → string   | Opens mic, returns transcript after VAD silence or timeout   |
-| speak_text         | text: string → "spoken"             | Queues text for Piper TTS; non-blocking                      |
-| get_status         | → {recording: bool, speaking: bool} | Returns current audio I/O state                              |
+| Tool               | Signature                           | Description                                                |
+|--------------------|-------------------------------------|------------------------------------------------------------|
+| transcribe_voice   | timeout_seconds?: number → string   | Opens mic, returns transcript after VAD silence or timeout |
+| speak_text         | text: string → "spoken"             | Queues text for the configured TTS engine; non-blocking    |
+| get_status         | → {recording: bool, speaking: bool} | Returns current audio I/O state                            |
+
+Omit `timeout_seconds` and voxctrl uses the Record timeout from Settings → General (default 15s).
 
 ### Claude Desktop config
 
@@ -58,77 +79,96 @@ Protocol: JSON-RPC 2.0, newline-delimited
 
 ## Configuration Files
 
-### config.json (global settings)
+### config.toml (global settings)
 
-Key options: whisper_model, tts_enabled, tts_voice, mcp_server_enabled, atspi_injection,
-atspi_auto_code_mode, show_overlay, overlay_style, vad_threshold.
+Key options: engine.backend, engine.whisper_cpp.model_size, engine.whisper_cpp.device,
+engine.moonshine.model_size, tts.engine, tts.hf_token, ui.show_overlay, ui.overlay_style,
+ui.overlay_position, audio.vad_threshold, mcp server enable + record timeout, update check on launch.
 
-### targets.toml (output destinations)
+### targets.toml (Output Commands)
 
-Each [[target]] entry defines: id, label, delivery, post_processing, and optional [target.ollama].
-Delivery types: inject | clipboard | exec | pipe | socket | file | dbus
+Each [[target]] entry defines: id, label, delivery, optional [target.processing] overrides, and
+delivery-specific fields. The file and its [[target]] blocks kept their names when Output Targets
+were renamed to Output Commands in 0.4.0.
 
-Example:
 ```toml
 [[target]]
-id              = "hermes"
-label           = "Hermes Agent"
-delivery        = "pipe"
-pipe_path       = "/tmp/hermes.in"
-post_processing = "strip_fillers"
-response_pipe   = "/tmp/hermes.out"
-append_newline  = true
+id             = "hermes"
+label          = "Hermes Agent"
+delivery       = "pipe"
+pipe_path      = "/tmp/hermes.in"
+response_pipe  = "/tmp/hermes.out"
+append_newline = true
+
+[hermes.processing]
+remove_fillers = true
+
+[[target]]
+id       = "cmd_router"
+label    = "Voice Command Router"
+delivery = "command"
 ```
 
 ### bindings.toml (hotkey gestures)
 
-Each [[binding]] maps keys + gesture to a target ID.
-Gesture types: hold | toggle | double_tap
+Each [[binding]] maps keys + gesture to one or more command IDs.
+Gesture types: hold | toggle | double_tap | double_tap_hold
 
-Example:
 ```toml
 [[binding]]
-keys    = ["KEY_LEFTMETA", "KEY_SPACE"]
-gesture = "hold"
-target  = "focused_window"
+id         = "dictate_hold"
+keys       = ["KEY_LEFTMETA", "KEY_SPACE"]
+gesture    = "hold"
+target_ids = ["default"]
+hold_threshold_ms = 200
 ```
 
 ## Documentation Sections
 
-- Installation: https://voxctrl.dev/docs
-- Quickstart: https://voxctrl.dev/docs/quickstart
-- Core Concepts: https://voxctrl.dev/docs/concepts
-- Hotkeys & Gestures: https://voxctrl.dev/docs/hotkeys
-- Routing & Targets: https://voxctrl.dev/docs/routing
-- AT-SPI2 Integration: https://voxctrl.dev/docs/atspi
-- Code Mode: https://voxctrl.dev/docs/code-mode
-- AI Post-Processing: https://voxctrl.dev/docs/ai
-- Voice Output (TTS): https://voxctrl.dev/docs/tts
-- Recording Overlays: https://voxctrl.dev/docs/overlays
-- MCP Server: https://voxctrl.dev/docs/mcp
-- Security: https://voxctrl.dev/docs/security
-- Configuration Reference: https://voxctrl.dev/docs/configuration
-- Tutorials: https://voxctrl.dev/docs/tutorials
-- Architecture: https://voxctrl.dev/docs/architecture
+- Quickstart: https://voxctrl.dev/voxctrl/docs/quickstart.html
+- Installation: https://voxctrl.dev/voxctrl/docs/install.html
+- Setup wizard: https://voxctrl.dev/voxctrl/docs/setup.html
+- Core concepts: https://voxctrl.dev/voxctrl/docs/concepts.html
+- Hotkeys & gestures: https://voxctrl.dev/voxctrl/docs/hotkeys.html
+- Routing & Output Commands: https://voxctrl.dev/voxctrl/docs/routing.html
+- AT-SPI2: https://voxctrl.dev/voxctrl/docs/atspi.html
+- Code mode: https://voxctrl.dev/voxctrl/docs/codemode.html
+- AI post-processing: https://voxctrl.dev/voxctrl/docs/ai.html
+- Voice output (TTS): https://voxctrl.dev/voxctrl/docs/tts.html
+- Overlays: https://voxctrl.dev/voxctrl/docs/overlays.html
+- MCP server: https://voxctrl.dev/voxctrl/docs/mcp.html
+- DBus control: https://voxctrl.dev/voxctrl/docs/dbus.html
+- Configuration reference: https://voxctrl.dev/voxctrl/docs/config.html
+- Architecture: https://voxctrl.dev/voxctrl/docs/architecture.html
 
-## Hardware Backends
+## Engines
 
-| Hardware              | Backend           | Acceleration          |
-|-----------------------|-------------------|-----------------------|
-| NVIDIA GPU (CUDA11+)  | faster-whisper    | CUDA                  |
-| AMD GPU (RDNA/GCN)    | whisper.cpp       | Vulkan                |
-| Intel Arc / Iris Xe   | whisper.cpp       | Vulkan                |
-| CPU only              | faster-whisper    | int8 fallback         |
-| Raspberry Pi / Edge   | moonshine         | ONNX int8 (CPU-first) |
+| Engine      | Sizes                                  | Acceleration            | Best for                     |
+|-------------|----------------------------------------|-------------------------|------------------------------|
+| whisper.cpp | tiny, base, small, medium, large-v3(+turbo) | CUDA / Vulkan / CPU | Accuracy in a quiet room     |
+| Moonshine   | tiny, base                             | CPU-native (ONNX)       | Noisy rooms, low latency     |
 
-## AI Pipeline Stages
+## TTS Engines
 
-strip_fillers | spoken_punct | snippets | ollama_prompt | prepend | append_newline | code_mode
+| Engine           | Kind                   | Download            | Notes                                  |
+|------------------|------------------------|---------------------|----------------------------------------|
+| Breeze-TTS-2     | neural, expressive     | ~1.2 GB, gated      | Voice Design from a text prompt        |
+| Pocket-TTS       | neural, voice cloning  | ~500 MB, gated      | Clones a voice from a reference clip   |
+| Piper            | ONNX neural            | ~60 MB per voice    | ~11 voices                             |
+| Inflect-Micro-v2 | compact neural (ONNX)  | 38 MB               | Single fixed English voice             |
+| eSpeak-NG        | formant synth          | none (bundled)      | Default; always available              |
+
+Gated models need a HuggingFace token with the licence accepted; one token (tts.hf_token) covers both,
+and an exported HF_TOKEN takes precedence and is never written to the config.
+
+## Processing Stages
+
+remove_fillers | spoken_punctuation | auto_format_lists | snippets | code_mode | LLM rewrite (OpenAI-compatible)
 
 ## Security Model
 
-- Unix socket only by default (no network exposure)
-- Zero outbound traffic (all processing is local)
-- Optional microphone confirmation (require_confirmation: true)
-- Tool allowlist: disable individual MCP tools via config
-- Target allowlist: restrict which targets MCP clients can route to
+- Local socket / named pipe only by default; no network exposure.
+- No keyboard access: shortcuts arrive through the desktop portal.
+- exec delivery spawns with shell=false, so a transcript cannot inject shell syntax.
+- webhook delivery signs its POST with HMAC-SHA256 (X-VoxCtrl-Signature).
+- Update downloads are verified against the checksum GitHub published before anything is replaced.

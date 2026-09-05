@@ -32,10 +32,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -53,13 +54,14 @@
         <span class="h">Getting started</span>
         <a class="item" href="/voxctrl/docs/quickstart.html"><span class="glyph">&#x2303;</span> Quickstart</a>
         <a class="item" href="/voxctrl/docs/install.html"><span class="glyph">&#x229E;</span> Installation</a>
+        <a class="item" href="/voxctrl/docs/setup.html"><span class="glyph">&#x2726;</span> Setup wizard</a>
         <a class="item" href="/voxctrl/docs/concepts.html"><span class="glyph">&#x25C7;</span> Core concepts</a>
       </div>
       <div class="group">
         <span class="h">Input &amp; routing</span>
         <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
         <a class="item" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
-          targets</a>
+          commands</a>
         <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
         <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
       </div>
@@ -106,7 +108,7 @@
           <tr>
             <td>targets.toml</td>
             <td>TOML</td>
-            <td>Output target definitions</td>
+            <td>Output Command definitions</td>
           </tr>
           <tr>
             <td>bindings.toml</td>
@@ -143,8 +145,9 @@
         <tbody>
           <tr>
             <td>backend</td>
-            <td>"auto"</td>
-            <td>"auto" | "whisper-cpp" | "moonshine" — auto selects based on GPU availability</td>
+            <td>"whisper-cpp"</td>
+            <td>"whisper-cpp" | "moonshine". The legacy value "auto" is still read and migrates to "whisper-cpp",
+              which is what it always resolved to.</td>
           </tr>
           <tr>
             <td>inference_mode</td>
@@ -153,7 +156,7 @@
           </tr>
           <tr>
             <td>whisper_cpp.model_size</td>
-            <td>"large-v3"</td>
+            <td>"tiny"</td>
             <td>tiny, tiny.en, base, base.en, small, small.en, medium, medium.en, large-v2, large-v3,
               large-v3-turbo</td>
           </tr>
@@ -213,7 +216,7 @@
           <tr>
             <td>evdev_device</td>
             <td>null</td>
-            <td>Linux evdev keyboard device path for hotkeys, e.g. "/dev/input/event4"</td>
+            <td>Legacy field, retained for config compatibility. Hotkeys go through the desktop portal and read no device.</td>
           </tr>
           <tr>
             <td>noise_suppression</td>
@@ -531,7 +534,7 @@
 
       <h2>bindings.toml</h2>
       <p>Each hotkey is a <code>[[binding]]</code> block with <code>id</code>, <code>label</code>,
-        <code>keys</code> (evdev key names), <code>gesture</code>, and <code>target_ids</code> (ordered list of
+        <code>keys</code> (Linux <code>KEY_*</code> names), <code>gesture</code>, and <code>target_ids</code> (ordered list of
         target IDs to route to).</p>
       <table class="docs-table">
         <thead>
@@ -545,12 +548,12 @@
           <tr>
             <td>gesture</td>
             <td>—</td>
-            <td>hold | toggle | double_tap | double_tap_hold | chord</td>
+            <td>hold | toggle | double_tap | double_tap_hold</td>
           </tr>
           <tr>
             <td>subkey</td>
             <td>—</td>
-            <td>Trigger key for the chord gesture, pressed after base keys are held</td>
+            <td>Reserved; unused by the current gesture set</td>
           </tr>
           <tr>
             <td>hold_threshold_ms</td>
@@ -629,8 +632,8 @@
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -644,7 +647,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

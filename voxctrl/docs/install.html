@@ -32,10 +32,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -60,7 +61,7 @@
         <span class="h">Input &amp; routing</span>
         <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
         <a class="item" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
-          targets</a>
+          commands</a>
         <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
         <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
       </div>
@@ -184,28 +185,24 @@
       <pre class="code-inline">chmod +x VoxCtrl.AppImage
 ./VoxCtrl-x86_64.AppImage</pre>
 
-      <h3>System install (desktop entry, udev rules, input group)</h3>
-      <p>VoxCtrl supports two ways to set up system integration:</p>
-      <ul>
-        <li><strong>CLI mode:</strong> run the AppImage with the <code>--install</code> flag in a terminal — it prompts
-          for your password via <code>sudo</code>:
-          <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
-        </li>
-        <li><strong>GUI mode:</strong> launch the AppImage normally. If hardware permissions are missing, a
-          diagnostics window appears automatically with a <strong>Setup System Integration</strong> button that
-          prompts for your password via <code>pkexec</code>.</li>
-      </ul>
-      <p>The installer:</p>
-      <ul>
-        <li>Copies the app icon to <code>~/.local/share/icons/hicolor/128x128/apps/voxctrl.png</code></li>
-        <li>Registers a <code>.desktop</code> launcher in <code>~/.local/share/applications/voxctrl.desktop</code></li>
-        <li>Creates udev rules at <code>/etc/udev/rules.d/99-voxctrl.rules</code> for <code>/dev/input</code> access
-          (required for global hotkeys)</li>
-        <li>Adds the current user to the <code>input</code> group</li>
-      </ul>
-      <div class="note"><span class="icon">!</span> After running the installer, log out and back in (or reboot) for
-        the <code>input</code> group membership to take effect. Until then, global hotkeys will not work.
-      </div>
+      <p>Nothing has to be installed first — not even <code>libfuse2</code>: the AppImage's runtime uses your system's
+        FUSE 3, and extracts and runs itself when FUSE is unavailable. It needs glibc 2.35 or newer (Ubuntu 22.04+,
+        Linux Mint 21+, Debian 12+, Fedora 36+, Arch); older distributions have to build from source.</p>
+      <p>Desktop integration is automatic: voxctrl registers its own icon
+        (<code>~/.local/share/icons/hicolor/128x128/apps/voxctrl.png</code>) and <code>.desktop</code> launcher
+        (<code>~/.local/share/applications/voxctrl.desktop</code>) on every Linux launch, with no privileges.</p>
+
+      <h3>Text-injection helper</h3>
+      <p>The only thing that can need a package manager is the helper that types text into other windows —
+        <code>wtype</code> on Wayland, <code>xdotool</code> on X11. If it is missing, the setup window says so and
+        offers to install it, or shows you the command. You can also do that step up front:</p>
+      <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
+      <div class="note"><span class="icon">!</span> <strong>The installer does not touch keyboard permissions, and
+          there is no step that does.</strong> Global shortcuts go through the XDG desktop portal, so nothing needs
+        granting. The administrator prompt is for installing those packages and nothing else. Older versions wrote
+        <code>/etc/udev/rules.d/99-voxctrl.rules</code>, which let every program running as your user read every
+        keystroke on your system; the installer now <strong>removes</strong> that rule if it finds it, and never
+        creates it.</div>
 
       <h2>Option B: Windows</h2>
       <p>Download the Windows installer from GitHub Releases and run
@@ -222,29 +219,31 @@ npm run tauri build</pre>
       <p>For development with hot-reload: <code>npm run tauri dev</code></p>
 
       <h2>First Run</h2>
-      <p>On first launch, voxctrl creates <code>~/.config/voxctrl/</code> with default config files and opens the
-        Settings window.</p>
-      <ol>
-        <li><strong>Download a model</strong> — Settings → Engine → choose a size → click Download. Recommendation:
-          <code>small</code> (~466 MB) for good speed/accuracy; <code>large-v3</code> (default, ~3 GB) for maximum
-          accuracy. <code>large-v3-turbo</code> (~1.6 GB) trades a little accuracy for roughly double the speed.
-        </li>
-        <li><strong>Check your hotkey</strong> — a default binding (<code>Super + Space</code>, hold gesture → inject to
-          focused window) is created automatically. Verify in Settings → Hotkeys.</li>
-        <li><strong>Test dictation</strong> — open any text editor, click into the text area, hold
-          <code>Super + Space</code>, speak, release.
-        </li>
-      </ol>
+      <p>On first launch, voxctrl creates <code>~/.config/voxctrl/</code> and opens the seven-step setup wizard rather
+        than the settings window. It covers engine and model, hotkey gesture and binding, overlay, a live dictation
+        test, and an optional voice — downloading whatever it needs along the way, and writing each choice to disk as
+        you make it. Full walkthrough: <a href="setup.html">Setup wizard</a>.</p>
+      <p>Reach it again afterwards with <code>voxctrl --setup</code> (the aliases <code>--wizard</code>,
+        <code>--setup-wizard</code> and <code>--first-run</code> also work), or Settings → General → <strong>Open setup
+          wizard</strong>. Skipping it drops you into Settings with defaults, which still works — the wizard is a
+        convenience, not a gate.</p>
 
       <h2>Optional Setup</h2>
-      <h3>TTS (Piper / Pocket-TTS voices)</h3>
-      <p>Go to Settings → TTS, enable TTS, select a voice, click Download. Piper voices are stored at
-        <code>~/.local/share/voxctrl/piper-voices/</code>. Pocket-TTS is a pure-Rust voice-cloning engine — its model
-        weights are downloaded once to the HuggingFace cache (<code>~/.cache/huggingface/hub/</code>) and require a
-        HuggingFace account with the <code>kyutai/pocket-tts</code> license accepted plus an access token, set via
-        Settings → TTS → Pocket-TTS or the <code>HF_TOKEN</code> environment variable. Espeak-ng is always available
-        as a lightweight fallback.
-      </p>
+      <h3>TTS voices</h3>
+      <p>Go to Settings → TTS (or the wizard's Voice step), enable speech output, select an engine and voice, click
+        Download. Five engines ship:</p>
+      <ul>
+        <li><strong>Breeze-TTS-2</strong> — expressive neural, voice design from natural-language prompts, ~1.2 GB.
+          Gated HuggingFace download under a non-commercial licence; optional CUDA/Metal GPU offload</li>
+        <li><strong>Pocket-TTS</strong> — pure-Rust voice cloning from a reference clip, ~500 MB. Also gated</li>
+        <li><strong>Piper</strong> — ONNX neural, ~11 voices at roughly 60 MB each, stored at
+          <code>~/.local/share/voxctrl/piper-voices/</code></li>
+        <li><strong>Inflect-Micro-v2</strong> — compact neural ONNX, 38 MB</li>
+        <li><strong>eSpeak-NG</strong> — formant synth, bundled, nothing to download</li>
+      </ul>
+      <p>The two gated engines need a HuggingFace account with their licence accepted plus an access token, set via
+        Settings → TTS (or the wizard) or the <code>HF_TOKEN</code> environment variable, which takes precedence over
+        a saved token. Weights land in the HuggingFace cache (<code>~/.cache/huggingface/hub/</code>).</p>
 
       <h3>MCP Server (Claude Desktop / Cursor)</h3>
       <p>Enable in Settings → Engine → MCP Server. Then add to <code>~/.config/claude/claude_desktop_config.json</code>:
@@ -261,12 +260,12 @@ npm run tauri build</pre>
 
       <h2>Permissions setup (Linux)</h2>
       <h3>Global hotkeys</h3>
-      <p>voxctrl uses evdev to listen for global keyboard events. Your user must be in the <code>input</code> group:</p>
-      <pre class="code-inline">sudo usermod -aG input $USER
-# Log out and back in
-
-# Verify:
-groups $USER | grep input</pre>
+      <p>There is nothing to set up. Shortcuts are registered with your desktop through the XDG
+        <code>GlobalShortcuts</code> portal (KDE Plasma, GNOME 48+, Hyprland), which owns the key grab and tells
+        voxctrl only that its own shortcut fired. No udev rule, no <code>input</code> group, no logout, no reboot.</p>
+      <p>Settings → Hotkeys shows, live, how shortcuts are reaching voxctrl and which keys your desktop bound. If your
+        desktop provides no shortcuts portal, voxctrl says so at launch and explains the trade-off rather than granting
+        itself keyboard access to work around it.</p>
 
       <h3>Wayland text injection</h3>
       <p>For Wayland sessions, install <code>wtype</code>:</p>
@@ -290,9 +289,12 @@ sudo pacman -S xdotool</pre>
       <h2>Troubleshooting</h2>
       <h3>Hotkeys not working</h3>
       <ul>
-        <li>Check you are in the <code>input</code> group: <code>groups | grep input</code></li>
-        <li>Log out and back in after being added to the group</li>
-        <li>On some distros, the udev rule path differs — the built-in installer handles this automatically</li>
+        <li>Open Settings → Hotkeys — it reports whether the portal accepted the binding and which keys your desktop
+          actually bound</li>
+        <li>On KDE Plasma, an upstream bug leaves portal shortcuts registered but unticked in System Settings until you
+          enable them yourself. voxctrl detects this and shows a one-click <strong>Open Shortcut Settings</strong>
+          button</li>
+        <li>If your desktop has no shortcuts portal, voxctrl says so at launch — that is the whole diagnosis</li>
       </ul>
       <h3>No audio devices found</h3>
       <ul>
@@ -322,7 +324,7 @@ sudo pacman -S xdotool</pre>
 
       <div class="docs-foot">
         <a href="quickstart.html"><small>← previous</small><span>Quickstart</span></a>
-        <a href="concepts.html" style="text-align:right;"><small>next →</small><span>Core concepts</span></a>
+        <a href="setup.html" style="text-align:right;"><small>next →</small><span>Setup wizard</span></a>
       </div>
     </main>
 
@@ -352,8 +354,8 @@ sudo pacman -S xdotool</pre>
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -367,7 +369,7 @@ sudo pacman -S xdotool</pre>
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

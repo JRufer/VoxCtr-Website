@@ -129,3 +129,192 @@ document.addEventListener('keydown', (e) => {
     } catch { /* leave static fallback */ }
   }
 })();
+
+/* ─────────── first-run walkthrough player ───────────
+   One window that plays itself through the seven setup steps, the way a
+   person would walk through them: the frame changes, the rail fills in, and
+   the Continue button flashes as if it were pressed. Hovering, focusing a
+   control, or scrolling the section out of view pauses it. */
+(function () {
+  const root = document.getElementById('wz');
+  if (!root) return;
+
+  const stage = document.getElementById('wzStage');
+  const frames = Array.from(stage.querySelectorAll('.wz-frame'));
+  const railEl = document.getElementById('wzRail');
+  const nextBtn = document.getElementById('wzNext');
+  const backBtn = document.getElementById('wzBack');
+  const playBtn = document.getElementById('wzPlay');
+  const barEl = document.getElementById('wzBar');
+  const capEl = document.getElementById('wzCap');
+  const numEl = document.getElementById('wzNum');
+  const footEl = root.querySelector('.wz-foot');
+
+  const STEPS = [
+    { label: 'Welcome', ms: 5200, cta: 'Get started →', cap: '<b>Welcome.</b> What the next few minutes will cover — and a promise that none of it is permanent.' },
+    { label: 'Engine', ms: 8200, cta: 'Continue →', cap: '<b>Engine.</b> whisper.cpp or Moonshine, and a model size. The wizard downloads it before you can continue.' },
+    { label: 'Hotkey', ms: 7200, cta: 'Continue →', cap: '<b>Hotkey.</b> Pick a gesture, record the keys. The binding is registered through the desktop portal, live, before you leave the step.' },
+    { label: 'Overlay', ms: 7200, cta: 'Continue →', cap: '<b>Overlay.</b> Eight styles and three positions — or no overlay at all, and just the tray icon.' },
+    { label: 'Test', ms: 8200, cta: 'Continue →', cap: '<b>Live test.</b> Hold the binding you just made and watch real transcription land in a real text box.' },
+    { label: 'Voice', ms: 8200, cta: 'Continue →', cap: '<b>Voice output.</b> Optional. Five TTS engines, sampled in place, from a 38 MB neural voice to a 1.2 GB one.' },
+    { label: 'Done', ms: 7000, cta: 'Finish', cap: '<b>Done.</b> A summary of every choice, where to change each one, and where the tray icon lives.' },
+  ];
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── build the step rail ── */
+  const bubbles = [];
+  const links = [];
+  STEPS.forEach((s, i) => {
+    if (i > 0) {
+      const l = document.createElement('span');
+      l.className = 'wz-link';
+      railEl.appendChild(l);
+      links.push(l);
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'wz-step';
+    b.innerHTML = '<span class="bub">' + String(i + 1).padStart(2, '0') + '</span><span>' + s.label + '</span>';
+    b.addEventListener('click', () => { pause(); go(i); });
+    railEl.appendChild(b);
+    bubbles.push(b);
+  });
+
+  /* ── state ── */
+  let cur = 0;
+  let playing = !reduced;
+  let t0 = 0;          // when the current step started
+  let elapsed = 0;     // ms spent on the current step while playing
+  let raf = 0;
+  let visible = true;
+  let hovering = false;
+
+  function render() {
+    frames.forEach((f, i) => {
+      f.classList.toggle('is-on', i === cur);
+      f.classList.toggle('is-prev', i < cur);
+    });
+    bubbles.forEach((b, i) => {
+      b.classList.toggle('now', i === cur);
+      b.classList.toggle('done', i < cur);
+      b.querySelector('.bub').textContent = i < cur ? '✓' : String(i + 1).padStart(2, '0');
+    });
+    links.forEach((l, i) => l.classList.toggle('fill', i < cur));
+    numEl.textContent = String(cur + 1);
+    nextBtn.textContent = STEPS[cur].cta;
+    // Read by the mobile footer's ::before, which stands in for the step rail.
+    footEl.dataset.count = (cur + 1) + ' / ' + STEPS.length;
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    capEl.innerHTML = STEPS[cur].cap;
+  }
+
+  function go(i) {
+    cur = (i + STEPS.length) % STEPS.length;
+    elapsed = 0;
+    t0 = performance.now();
+    render();
+    if (cur === 3) startClips();
+    if (cur === 4) runTypeDemo();
+  }
+
+  function advance() {
+    // Flash the Continue button first, so the frame change reads as a click.
+    nextBtn.classList.add('press');
+    setTimeout(() => nextBtn.classList.remove('press'), 180);
+    go(cur + 1);
+  }
+
+  function pause() {
+    if (!playing) return;
+    playing = false;
+    elapsed += performance.now() - t0;
+    playBtn.innerHTML = '▶ play';
+    playBtn.setAttribute('aria-label', 'Play the walkthrough');
+  }
+
+  function play() {
+    if (playing) return;
+    playing = true;
+    t0 = performance.now();
+    playBtn.innerHTML = '❚❚ pause';
+    playBtn.setAttribute('aria-label', 'Pause the walkthrough');
+  }
+
+  function tick(now) {
+    const held = !playing || hovering || !visible;
+    if (held) { t0 = now; } else { elapsed += now - t0; t0 = now; }
+    const frac = Math.min(1, elapsed / STEPS[cur].ms);
+    barEl.style.width = (frac * 100).toFixed(1) + '%';
+    if (!held && frac >= 1) advance();
+    raf = requestAnimationFrame(tick);
+  }
+
+  /* ── the overlay step plays its clips, but only once it is reached ── */
+  let clipsStarted = false;
+  function startClips() {
+    if (clipsStarted) return;
+    clipsStarted = true;
+    stage.querySelectorAll('video[data-clip]').forEach((v) => {
+      v.src = v.dataset.clip;
+      v.play().then(() => v.classList.add('ready')).catch(() => { /* leave the glyph */ });
+    });
+  }
+
+  /* ── the Test step types itself ── */
+  let typeTimer = null;
+  function runTypeDemo() {
+    const out = document.getElementById('wzType');
+    const rec = document.getElementById('wzRec');
+    if (!out) return;
+    clearTimeout(typeTimer);
+    const text = 'Ship the routing refactor before Friday.';
+    out.classList.remove('ph');
+    out.textContent = '';
+    rec.textContent = '● recording';
+    rec.style.color = 'var(--warn)';
+    let i = 0;
+    (function step() {
+      if (cur !== 4) { return; }
+      if (i <= text.length) {
+        out.textContent = text.slice(0, i++);
+        typeTimer = setTimeout(step, 42);
+      } else {
+        rec.textContent = '✓ transcribed';
+        rec.style.color = 'var(--good)';
+      }
+    })();
+    setTimeout(() => { if (cur === 4) { rec.textContent = '◌ transcribing…'; rec.style.color = 'var(--cyan-1)'; } }, 900);
+  }
+
+  /* ── controls ── */
+  nextBtn.addEventListener('click', () => { pause(); go(cur + 1); });
+  backBtn.addEventListener('click', () => { pause(); go(cur - 1); });
+  playBtn.addEventListener('click', () => (playing ? pause() : play()));
+  root.addEventListener('pointerenter', () => { hovering = true; });
+  root.addEventListener('pointerleave', () => { hovering = false; });
+
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { pause(); go(cur + 1); }
+    if (e.key === 'ArrowLeft') { pause(); go(cur - 1); }
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; }, { threshold: 0.25 }).observe(root);
+  }
+
+  render();
+  if (reduced) {
+    playBtn.innerHTML = '▶ play';
+    barEl.style.width = '0%';
+  }
+  raf = requestAnimationFrame(tick);
+})();
+
+/* ─────────── settings showcase tabs ─────────── */
+document.querySelectorAll('.st-tab[data-st]').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.st-tab').forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('.st-panel').forEach(p => p.classList.toggle('on', p.dataset.stp === t.dataset.st));
+  });
+});

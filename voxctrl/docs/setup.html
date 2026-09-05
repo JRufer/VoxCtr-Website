@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Setup wizard — voxctrl Docs</title>
+  <meta name="description"
+    content="The seven-step first-run wizard: engine and model, hotkey, overlay, a live dictation test, and an optional voice — plus self-updating from GitHub releases." />
+  <link rel="icon" href="/voxctrl/assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/voxctrl/css/base.css" />
+  <link rel="stylesheet" href="/voxctrl/css/components.css" />
+  <link rel="stylesheet" href="/voxctrl/css/docs.css" />
+  <link rel="stylesheet" href="/voxctrl/css/responsive.css" />
+</head>
+
+<body>
+
+  <div class="bg-stack">
+    <div class="grid-bg"></div>
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+    <div class="bg-noise"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-brand" href="/voxctrl/">
+      <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
+      <span>vox<span class="v">ctr</span></span>
+      <span class="nav-version">v0.4.0</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
+      <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-tools">
+      <a class="btn-pill" id="gh-star" href="https://github.com/JRufer/voxctrl" target="_blank" rel="noreferrer">
+        <span class="stars">&#9733;</span> <span id="gh-star-count">&#x2026;</span>
+      </a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="docs-shell">
+    <aside class="docs-side">
+      <div class="group">
+        <span class="h">Getting started</span>
+        <a class="item" href="/voxctrl/docs/quickstart.html"><span class="glyph">&#x2303;</span> Quickstart</a>
+        <a class="item" href="/voxctrl/docs/install.html"><span class="glyph">&#x229E;</span> Installation</a>
+        <a class="item is-active" href="/voxctrl/docs/setup.html"><span class="glyph">&#x2726;</span> Setup wizard</a>
+        <a class="item" href="/voxctrl/docs/concepts.html"><span class="glyph">&#x25C7;</span> Core concepts</a>
+      </div>
+      <div class="group">
+        <span class="h">Input &amp; routing</span>
+        <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
+        <a class="item" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
+          commands</a>
+        <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
+        <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
+      </div>
+      <div class="group">
+        <span class="h">AI &amp; voice</span>
+        <a class="item" href="/voxctrl/docs/ai.html"><span class="glyph">&#x2207;</span> AI processing</a>
+        <a class="item" href="/voxctrl/docs/tts.html"><span class="glyph">&#x2295;</span> Voice output</a>
+        <a class="item" href="/voxctrl/docs/overlays.html"><span class="glyph">&#x2C6C;</span> Overlays</a>
+      </div>
+      <div class="group">
+        <span class="h">Integrations</span>
+        <a class="item" href="/voxctrl/docs/mcp.html"><span class="glyph">&#x229E;</span> MCP server</a>
+        <a class="item" href="/voxctrl/docs/dbus.html"><span class="glyph">&#x2234;</span> DBus control</a>
+      </div>
+      <div class="group">
+        <span class="h">Reference</span>
+        <a class="item" href="/voxctrl/docs/config.html"><span class="glyph">&#x2261;</span> Configuration</a>
+        <a class="item" href="/voxctrl/docs/architecture.html"><span class="glyph">&#x25A3;</span> Architecture</a>
+      </div>
+    </aside>
+
+    <main class="docs-content" id="docsContent">
+      <div class="crumbs">GETTING STARTED <span>/</span> SETUP WIZARD</div>
+      <h1>Setup wizard</h1>
+      <p class="lede">New in v0.4.0. On a machine with no config, voxctrl opens a seven-step wizard rather than a
+        settings window full of defaults nobody chose. It picks a transcription engine and model, binds a hotkey and
+        registers it with your desktop, chooses an overlay, runs a live dictation test, and optionally adds a voice.</p>
+
+      <div class="note"><span class="icon">ⓘ</span> The wizard deliberately offers a <em>subset</em> of what Settings
+        exposes. A first launch is the wrong moment to choose between eleven Whisper variants and every Piper voice.
+        Everything omitted here is still reachable in Settings afterwards.</div>
+
+      <h2>Opening it again</h2>
+      <ul>
+        <li><code>voxctrl --setup</code> — the aliases <code>--wizard</code>, <code>--setup-wizard</code> and
+          <code>--first-run</code> do the same thing. Running it while voxctrl is already going reopens the wizard in
+          the running instance rather than starting a second copy.</li>
+        <li>Settings → General → <strong>Open setup wizard</strong>.</li>
+      </ul>
+      <p>Your current settings stay in place until you change them in the wizard, so reopening it is safe.</p>
+
+      <h2>Every choice is saved as you make it</h2>
+      <p>Each step writes straight to <code>~/.config/voxctrl/</code> the moment you pick something — there is no
+        "apply" at the end. Quitting halfway keeps everything you chose up to that point, and skipping the wizard
+        entirely leaves you with working defaults.</p>
+
+      <h2>The seven steps</h2>
+
+      <h3>1 · Welcome</h3>
+      <p>What the next few minutes cover, and a reminder that nothing here is permanent.</p>
+
+      <h3>2 · Engine</h3>
+      <p>whisper.cpp or Moonshine, and a model size inside each. The card for each engine shows relative speed,
+        quiet-room accuracy, and how much of that accuracy survives a noisy room — whisper.cpp is the more accurate in
+        a quiet space and scales further; Moonshine holds up better against fans, keyboards and traffic, and stays fast
+        on any CPU.</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Engine</th>
+            <th>Sizes offered</th>
+            <th>GPU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>whisper.cpp</td>
+            <td><code>tiny</code> 75 MB · <code>base</code> 142 MB · <code>small</code> 466 MB · <code>medium</code>
+              1.5 GB · <code>large-v3</code> 3.1 GB</td>
+            <td>Yes — CUDA or Vulkan</td>
+          </tr>
+          <tr>
+            <td>Moonshine</td>
+            <td><code>tiny</code> 100 MB · <code>base</code> 250 MB</td>
+            <td>No — CPU-native</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>A single <strong>GPU offloading</strong> switch sets <code>engine.whisper_cpp.device</code> to
+        <code>auto</code> (on) or <code>cpu</code> (off); <code>auto</code> hands the work to whichever GPU path the
+        build has. Moonshine is unaffected by it. The model you choose is downloaded before the wizard lets you
+        continue, and a model already on disk is reported as such.</p>
+
+      <h3>3 · Hotkey</h3>
+      <p>Pick one of four gestures, then record the keys. The binding is handed to the XDG
+        <code>GlobalShortcuts</code> portal there and then, so you find out on this step — not later — whether your
+        desktop accepted it.</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Gesture</th>
+            <th>Behaviour</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tap to talk (<code>toggle</code>)</td>
+            <td>Press once to start, press again to stop. Hands stay free while you speak.</td>
+          </tr>
+          <tr>
+            <td>Double-tap to talk (<code>double_tap</code>)</td>
+            <td>Two quick presses start dictation; one press stops. Hard to trigger by accident.</td>
+          </tr>
+          <tr>
+            <td>Hold to talk (<code>hold</code>)</td>
+            <td>Hold the keys while speaking, release to stop. Like a walkie-talkie.</td>
+          </tr>
+          <tr>
+            <td>Double-tap &amp; hold (<code>double_tap_hold</code>)</td>
+            <td>Tap once, then press and hold. Release to stop. Never collides with a plain shortcut.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>See <a href="hotkeys.html">Hotkeys</a> for the timing fields and what happens when a desktop has no shortcuts
+        portal.</p>
+
+      <h3>4 · Overlay</h3>
+      <p>Whether to show anything while the mic is live, which of the eight built-in styles, and where on screen it
+        sits (top, center or bottom). Choosing a style also turns the overlay on. Picking <strong>No overlay</strong>
+        leaves only the tray icon as feedback. Custom overlays are not offered here — a machine on its first launch has
+        none. See <a href="overlays.html">Overlays</a>.</p>
+
+      <h3>5 · Test</h3>
+      <p>A real text box and your real binding: click in, trigger the gesture you just bound, speak, and watch the
+        transcript land. This is the step that catches a hotkey the desktop silently refused, a muted microphone, or a
+        model that did not finish downloading. You can continue past it and come back from Settings → Hotkeys.</p>
+
+      <h3>6 · Voice (optional)</h3>
+      <p>Whether voxctrl should speak replies aloud, and with which engine. Each card plays a sample in place before
+        you commit to a download.</p>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Engine</th>
+            <th>Kind</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Breeze-TTS-2</td>
+            <td>neural · expressive</td>
+            <td>~1.2 GB · gated</td>
+          </tr>
+          <tr>
+            <td>Pocket TTS</td>
+            <td>neural · voice cloning</td>
+            <td>~500 MB · gated</td>
+          </tr>
+          <tr>
+            <td>Piper TTS</td>
+            <td>onnx · ~11 voices</td>
+            <td>~60 MB per voice</td>
+          </tr>
+          <tr>
+            <td>Inflect Micro</td>
+            <td>compact neural</td>
+            <td>38 MB</td>
+          </tr>
+          <tr>
+            <td>eSpeak-NG</td>
+            <td>formant synth</td>
+            <td>bundled — nothing to fetch</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><strong>Gated</strong> means HuggingFace only serves the weights to an account that has accepted the licence.
+        Create a token at <code>huggingface.co/settings/tokens</code>, accept the licence at
+        <code>huggingface.co/BreezeBlue/Breeze-TTS-2</code> and <code>huggingface.co/kyutai/pocket-tts</code>, then
+        paste the token into the wizard — one token covers both, and it is saved where Settings → TTS keeps it.
+        Exporting <code>HF_TOKEN</code> works instead and takes precedence over a saved token: it is shown in the UI
+        but kept out of your config file. Skipping this step leaves speech output off; Settings → TTS turns it on
+        later. See <a href="tts.html">Voice output</a>.</p>
+
+      <h3>7 · Done</h3>
+      <p>A summary of every choice, a pointer to the tray icon, and a map of which Settings tab holds what — including
+        the things the wizard skipped on purpose: Output Commands, per-binding LLM cleanup, audio devices and the MCP
+        server.</p>
+
+      <h2>Updating</h2>
+      <p>Also new in v0.4.0: voxctrl checks GitHub for a newer release shortly after launch, shows what changed, and —
+        if you say yes — downloads the build matching your installation (CPU AppImage, Vulkan AppImage or Windows
+        installer), verifies it against the checksum GitHub published, replaces itself and restarts.</p>
+      <ul>
+        <li>Nothing is replaced until a complete, verified file is on disk, so a failed update leaves the working
+          version alone.</li>
+        <li>The check is one unauthenticated <code>GET</code> to the public release listing, carrying no identifier of
+          you or your machine. It is the only network request voxctrl makes on its own.</li>
+        <li>Settings → General turns it off. With it off, voxctrl contacts GitHub only when you press <strong>Check for
+            updates</strong>.</li>
+      </ul>
+
+      <h2>Where the choices land</h2>
+      <table class="docs-table">
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Config</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Engine</td>
+            <td><code>engine.backend</code>, <code>engine.whisper_cpp.model_size</code>,
+              <code>engine.whisper_cpp.device</code>, <code>engine.moonshine.model_size</code></td>
+          </tr>
+          <tr>
+            <td>Hotkey</td>
+            <td>A <code>[[binding]]</code> in <code>bindings.toml</code></td>
+          </tr>
+          <tr>
+            <td>Overlay</td>
+            <td><code>ui.show_overlay</code>, <code>ui.overlay_style</code>, <code>ui.overlay_position</code></td>
+          </tr>
+          <tr>
+            <td>Voice</td>
+            <td>The TTS engine, voice and enable flag in <code>config.toml</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Full field reference: <a href="config.html">Configuration</a>.</p>
+
+      <div class="docs-foot">
+        <a href="install.html"><small>← previous</small><span>Installation</span></a>
+        <a href="concepts.html" style="text-align:right;"><small>next →</small><span>Core concepts</span></a>
+      </div>
+    </main>
+
+    <aside class="docs-toc" id="docsToc"></aside>
+  </div>
+
+  <footer class="foot">
+    <div class="shell">
+      <div class="foot-grid">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="/voxctrl/assets/voxctrl.gif" alt="" style="width:32px;height:32px;border-radius:8px;" />
+            <span style="font-weight:700;font-size:18px;">vox<span style="color:var(--cyan-1)">ctr</span></span>
+          </div>
+          <p style="color: var(--txt-2); font-size: 13px; margin-top: 12px; max-width: 280px; line-height: 1.6;">
+            The audio control layer for your AI and automation stack. Native, on-device, MIT-licensed.
+          </p>
+        </div>
+        <div>
+          <h6>Product</h6>
+          <a href="/voxctrl/">Overview</a>
+          <a href="/voxctrl/docs/quickstart.html">Quickstart</a>
+          <a href="/voxctrl/docs/mcp.html">MCP server</a>
+          <a href="/voxctrl/#hardware">Hardware</a>
+          <a href="/voxctrl/#backends">Backends</a>
+        </div>
+        <div>
+          <h6>Docs</h6>
+          <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
+          <a href="/voxctrl/docs/routing.html">Routing</a>
+          <a href="/voxctrl/docs/overlays.html">Overlays</a>
+        </div>
+        <div>
+          <h6>Open source</h6>
+          <a href="https://github.com/jrufer/voxctrl" target="_blank">GitHub</a>
+          <a href="https://github.com/jrufer/voxctrl/releases" target="_blank">Releases</a>
+          <a href="https://github.com/jrufer/voxctrl/issues" target="_blank">Issues</a>
+          <a href="https://github.com/jrufer/voxctrl/blob/main/LICENSE" target="_blank">MIT License</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <div class="left">
+          <img src="/voxctrl/assets/favicon.png" alt="" />
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
+        </div>
+        <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
+          only</div>
+      </div>
+    </div>
+  </footer>
+  <script src="/voxctrl/js/docs.js"></script>
+</body>
+
+</html>
