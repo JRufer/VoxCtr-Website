@@ -222,7 +222,7 @@
     </div>
   </section>
 
-  <!-- ── first-run walkthrough ── -->
+  <!-- ── first-run slideshow ── -->
   <section class="section section-bordered" id="setup">
     <div class="shell">
       <span class="eyebrow fade-up">// first run</span>
@@ -231,524 +231,51 @@
         New in v0.4.0: a first-run wizard walks a fresh machine through the whole setup — engine, hotkey,
         overlay, a live dictation test, and an optional voice — instead of dropping you into a settings
         window full of defaults nobody chose. Every choice is written to disk as you make it, so quitting
-        halfway keeps what you picked. Watch it play through below.
+        halfway keeps what you picked. Here it is, screen by screen.
       </p>
 
-      <div class="appwin wz fade-up" id="wz">
-        <div class="appwin-bar">
-          <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span class="t">VoxCtrl — First-Run Setup</span>
-          <span class="wbtn"></span><span class="wbtn"></span><span class="wbtn x"></span>
-        </div>
-
-        <div class="wz-head">
-          <span class="brand">vox<b>ctrl</b> &nbsp;// setup</span>
-          <span class="meta">step <span class="n" id="wzNum">1</span> / 7 · every choice editable later in Settings</span>
-        </div>
-
-        <div class="wz-stage" id="wzStage">
-
-          <!-- 01 · welcome -->
-          <div class="wz-frame is-on" data-step="0">
-            <div class="wz-welcome">
-              <div>
-                <div class="wz-orb">◉</div>
-                <span class="wz-eyebrow">// welcome</span>
-                <h3 class="wz-h">Speak to <span class="gold">anything</span> on your machine.</h3>
-                <p class="wz-lede">
-                  A few minutes of setup. Pick a transcription engine, bind a hotkey, choose how VoxCtrl
-                  shows itself, and test it end to end. Everything runs on this device — nothing leaves it.
-                </p>
-                <span class="wz-pill-note">↻ Nothing is permanent — every choice can be changed later in Settings.</span>
-              </div>
-              <div class="wz-tiles">
-                <div class="wz-card wz-tile"><span class="num">01</span><span class="g">∇</span>
-                  <div class="n">Transcription engine</div>
-                  <div class="d">whisper.cpp or Moonshine, sized to your hardware.</div>
-                </div>
-                <div class="wz-card wz-tile"><span class="num">02</span><span class="g">↰</span>
-                  <div class="n">Hotkey</div>
-                  <div class="d">A gesture and a key combo to start talking.</div>
-                </div>
-                <div class="wz-card wz-tile"><span class="num">03</span><span class="g">⬡</span>
-                  <div class="n">Overlay</div>
-                  <div class="d">A visual signal while the mic is live — or none.</div>
-                </div>
-                <div class="wz-card wz-tile"><span class="num">04</span><span class="g">◉</span>
-                  <div class="n">Live test</div>
-                  <div class="d">Dictate into a box and watch it land.</div>
-                </div>
-                <div class="wz-card wz-tile" style="grid-column: span 2;"><span class="num">05</span><span
-                    class="g">⊕</span>
-                  <div class="n">Voice output</div>
-                  <div class="d">Optional: let agents talk back through your speakers.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 02 · engine -->
-          <div class="wz-frame" data-step="1">
-            <div style="display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-              <div>
-                <span class="wz-eyebrow">// 01 · transcription engine</span>
-                <h3 class="wz-h">Which ears should VoxCtrl use?</h3>
-                <p class="wz-lede">
-                  Both run 100% on-device. <b>whisper.cpp</b> is most accurate in a quiet room and scales to
-                  very large models. <b>Moonshine</b> keeps its accuracy in noisy rooms and stays fast on CPU.
-                </p>
-              </div>
-              <div class="wz-card on wz-gpu">
-                <span class="wz-switch"></span>
-                <span>
-                  <b style="font-size:13px;">✳ GPU offloading <span
-                      style="font-family:var(--mono);font-size:10.5px;color:var(--cyan-1);">ON · Vulkan</span></b>
-                  <span style="display:block;color:var(--txt-2);font-size:11px;line-height:1.45;margin-top:3px;">
-                    Moves whisper.cpp weights from RAM to your GPU. Moonshine is CPU-native and unaffected.</span>
-                </span>
-              </div>
-            </div>
-
-            <div class="wz-engines">
-              <div class="wz-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <b style="font-size:17px;"><span style="color:var(--cyan-1);font-family:var(--mono)">∇</span>
-                    whisper.cpp</b>
-                  <span class="wz-tick">✓</span>
-                </div>
-                <p class="wz-lede" style="font-size:11.5px;margin-top:8px;">
-                  Reference-grade accuracy in quiet spaces. Five model sizes from 75 MB to 3.1 GB. CUDA, Vulkan or CPU.
-                </p>
-                <div class="wz-label" style="margin-top:12px;">model size</div>
-                <div class="wz-models">
-                  <span class="wz-model">tiny<span>75 MB</span></span>
-                  <span class="wz-model">base<span>142 MB</span></span>
-                  <span class="wz-model">small<span>466 MB</span></span>
-                  <span class="wz-model">medium<span>1.5 GB</span></span>
-                  <span class="wz-model">large-v3<span>3.1 GB</span></span>
-                </div>
-                <div class="wz-stat"><span>speed</span>
-                  <div class="track">
-                    <div class="fill" style="width:96%"></div>
-                  </div><span class="v">instant</span>
-                </div>
-                <div class="wz-stat"><span>accuracy</span>
-                  <div class="track">
-                    <div class="fill" style="width:80%"></div>
-                  </div><span class="v">80%</span>
-                </div>
-                <div class="wz-stat"><span>noisy room</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:51%"></div>
-                  </div><span class="v">51%</span>
-                </div>
-              </div>
-
-              <div class="wz-card on">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <b style="font-size:17px;"><span style="color:var(--cyan-1);font-family:var(--mono)">↯</span>
-                    Moonshine</b>
-                  <span class="wz-tick">✓</span>
-                </div>
-                <p class="wz-lede" style="font-size:11.5px;margin-top:8px;">
-                  Streaming ONNX model tuned for real rooms — fans, keyboards, traffic. Fast on any CPU, tiny download.
-                </p>
-                <div class="wz-label" style="margin-top:12px;">model size</div>
-                <div class="wz-models">
-                  <span class="wz-model">tiny<span>100 MB</span></span>
-                  <span class="wz-model on">base<span>250 MB</span></span>
-                </div>
-                <div class="wz-stat"><span>speed</span>
-                  <div class="track">
-                    <div class="fill" style="width:92%"></div>
-                  </div><span class="v">instant</span>
-                </div>
-                <div class="wz-stat"><span>accuracy</span>
-                  <div class="track">
-                    <div class="fill" style="width:77%"></div>
-                  </div><span class="v">77%</span>
-                </div>
-                <div class="wz-stat"><span>noisy room</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:72%"></div>
-                  </div><span class="v">72%</span>
-                </div>
-                <div class="wz-chip ok" style="margin-top:12px;">✓ base is on disk and ready</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 03 · hotkey -->
-          <div class="wz-frame" data-step="2">
-            <div>
-              <span class="wz-eyebrow">// 02 · first key binding</span>
-              <h3 class="wz-h">How do you want to start talking?</h3>
-              <p class="wz-lede">
-                Pick a gesture, then record the keys. Taps keep your hands free while speaking; holds can't be
-                left running by accident. Double-taps avoid clashes with shortcuts you already use.
-              </p>
-            </div>
-            <div class="wz-two">
-              <div class="wz-gestures">
-                <div class="wz-card wz-gest">
-                  <div class="n">Tap to talk</div>
-                  <div class="d">Press once to start, press again to stop. Hands stay free while you speak.</div>
-                </div>
-                <div class="wz-card wz-gest">
-                  <div class="n">Double-tap to talk</div>
-                  <div class="d">Two quick presses start dictation; one press stops. Hard to trigger by accident.</div>
-                </div>
-                <div class="wz-card wz-gest on">
-                  <div class="n">Hold to talk</div>
-                  <div class="d">Hold the keys down while speaking, release to stop. Like a walkie-talkie.</div>
-                </div>
-                <div class="wz-card wz-gest">
-                  <div class="n">Double-tap &amp; hold</div>
-                  <div class="d">Tap once, then press and hold. Release to stop. Never collides with a plain shortcut.
-                  </div>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:12px; min-height:0;">
-                <div class="wz-capture">
-                  <div>
-                    <span class="wz-live"><span class="wz-dot"></span>BINDING CAPTURED</span>
-                    <div class="wz-keys">
-                      <span class="wz-key lit">Ctrl</span><span style="color:var(--txt-3)">+</span><span
-                        class="wz-key lit">Space</span>
-                    </div>
-                    <div style="color:var(--txt-2); font-size:12px;">Click anywhere in this area to record a different
-                      combination.</div>
-                  </div>
-                </div>
-                <div class="wz-card" style="display:flex; gap:12px; align-items:flex-start;">
-                  <span style="color:var(--good); font-size:15px;">✓</span>
-                  <span>
-                    <b style="font-size:13px;">Shortcuts are live (portal)</b>
-                    <span style="display:block;color:var(--txt-2);font-size:11.5px;margin-top:3px;">
-                      The binding is registered system-wide through your desktop's GlobalShortcuts portal — VoxCtrl
-                      never reads the keyboard itself.</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 04 · overlay -->
-          <div class="wz-frame" data-step="3">
-            <div>
-              <span class="wz-eyebrow">// 03 · on-screen overlay</span>
-              <h3 class="wz-h">Show a signal while listening?</h3>
-              <p class="wz-lede">
-                The overlay appears the moment your hotkey fires and shows live mic level plus the active target —
-                so you know VoxCtrl is hearing you, and where the words are going. Turn it off for a silent setup.
-              </p>
-            </div>
-            <div class="wz-two" style="grid-template-columns: 1fr 300px;">
-              <div>
-                <div class="wz-label">style · 8 built in</div>
-                <div class="wz-styles">
-                  <div class="wz-card wz-style on">
-                    <div class="thumb">⊟<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Ocean Wave.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Ocean Wave</div>
-                      <div class="s">default · tide-pool waves</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">⊟<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Voice Card.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Voice Card</div>
-                      <div class="s">20×6 LED VU matrix</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">⌇<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Waveform.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Waveform</div>
-                      <div class="s">scrolling oscilloscope</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">◌<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Pulse Ring.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Pulse Ring</div>
-                      <div class="s">sonar sweep · target lock</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">▥<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Mono Bars.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Mono Bars</div>
-                      <div class="s">black &amp; white 5-bar meter</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">▦<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Neon Spectrum.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Neon Spectrum</div>
-                      <div class="s">16-band equalizer</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">▸<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Retro Terminal.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Retro Terminal</div>
-                      <div class="s">DOS-blue ASCII meter</div>
-                    </div>
-                  </div>
-                  <div class="wz-card wz-style">
-                    <div class="thumb">◔<video muted loop playsinline preload="none" data-clip="/voxctrl/assets/Analog VU.webm"></video></div>
-                    <div class="meta">
-                      <div class="n">Analog VU</div>
-                      <div class="s">vintage needle meter</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div class="wz-label">position · bottom</div>
-                <div class="wz-screen">
-                  <div class="float">◉ REC ▸ default</div>
-                  <div class="bar"></div>
-                </div>
-                <div class="wz-pos"><b>⤒ Top</b><b>⊡ Center</b><b class="on">⤓ Bottom</b></div>
-                <div class="wz-card" style="margin-top:12px; padding:10px 12px;">
-                  <b style="font-size:12.5px;">⊘ No overlay</b>
-                  <span style="display:block;color:var(--txt-2);font-size:11px;margin-top:3px;">Silent · tray icon
-                    only</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 05 · test -->
-          <div class="wz-frame" data-step="4">
-            <div style="display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-              <div>
-                <span class="wz-eyebrow">// 04 · live test</span>
-                <h3 class="wz-h">Say something.</h3>
-                <p class="wz-lede">Click into the box, then <b>hold</b> your binding and speak. Your words land where
-                  the cursor is.</p>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span class="wz-key">Ctrl</span><span style="color:var(--txt-3)">+</span><span
-                  class="wz-key">Space</span>
-                <span class="wz-chip">Hold to talk</span>
-              </div>
-            </div>
-            <div class="wz-testbox">
-              <div class="tb"><span>· test.txt</span><span id="wzRec">◌ waiting for hotkey</span></div>
-              <div class="area"><span id="wzType" class="ph">Click here, then use your hotkey…</span><span
-                  class="wz-caret"></span></div>
-            </div>
-            <div class="wz-hint">
-              <span>Nothing happening? The overlay and tray icon show whether VoxCtrl heard the key. You can continue
-                and come back to this from Settings → Hotkeys at any time.</span>
-              <span class="st-mono" style="flex:none;">Moonshine · base</span>
-            </div>
-          </div>
-
-          <!-- 06 · voice -->
-          <div class="wz-frame" data-step="5">
-            <div style="display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-              <div>
-                <span class="wz-eyebrow">// 05 · text to speech · optional</span>
-                <h3 class="wz-h">Should VoxCtrl talk back?</h3>
-                <p class="wz-lede">
-                  Agents can stream replies back through a response pipe and VoxCtrl speaks them aloud. Richer voices
-                  need bigger models and more time per sentence; lighter engines answer instantly.
-                </p>
-              </div>
-              <div style="display:flex; gap:10px; flex:none;">
-                <span class="wz-card on" style="padding:10px 14px;"><b style="font-size:13px;">⊕ Enable speech
-                    output</b><span
-                    style="display:block;color:var(--txt-2);font-size:10.5px;margin-top:2px;">Downloads once · runs
-                    offline</span></span>
-                <span class="wz-card" style="padding:10px 14px;"><b style="font-size:13px;">⊘ Skip for now</b><span
-                    style="display:block;color:var(--txt-2);font-size:10.5px;margin-top:2px;">Enable later in Settings →
-                    TTS</span></span>
-              </div>
-            </div>
-
-            <div class="wz-token">
-              <div>
-                <b style="font-size:12.5px;">HuggingFace access token</b>
-                <p class="wz-lede" style="font-size:11px; margin-top:5px;">
-                  Breeze-TTS-2 and Pocket TTS are gated downloads: HuggingFace only serves their weights to an account
-                  that has accepted the licence. One token covers both, and <code class="st-mono">HF_TOKEN</code> in the
-                  environment takes precedence over a saved one.
-                </p>
-              </div>
-              <div>
-                <div class="wz-input">hf_…</div>
-                <div style="color:var(--gold-1); font-family:var(--mono); font-size:10px; margin-top:6px;">no token —
-                  gated voices are locked</div>
-              </div>
-            </div>
-
-            <div class="wz-voices">
-              <div class="wz-card wz-voice">
-                <div>
-                  <div class="n">Breeze-TTS-2</div>
-                  <div class="k">neural · expressive</div>
-                </div>
-                <div class="wz-chip ok">✓ downloaded</div>
-                <div class="wz-chip">▶ play sample</div>
-                <div class="wz-stat"><span>quality</span>
-                  <div class="track">
-                    <div class="fill" style="width:96%"></div>
-                  </div>
-                </div>
-                <div class="wz-stat"><span>size</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:100%"></div>
-                  </div><span class="v">1.2 GB</span>
-                </div>
-                <div class="wz-note">Most natural prosody. Best on a GPU or fast CPU.</div>
-              </div>
-              <div class="wz-card wz-voice on">
-                <div style="display:flex;justify-content:space-between;">
-                  <div>
-                    <div class="n">Pocket TTS</div>
-                    <div class="k">neural · voice cloning</div>
-                  </div><span class="wz-tick">✓</span>
-                </div>
-                <div class="wz-chip ok">✓ downloaded</div>
-                <div class="wz-chip">▶ play sample</div>
-                <div class="wz-stat"><span>quality</span>
-                  <div class="track">
-                    <div class="fill" style="width:86%"></div>
-                  </div>
-                </div>
-                <div class="wz-stat"><span>size</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:42%"></div>
-                  </div><span class="v">500 MB</span>
-                </div>
-                <div class="wz-note">Rust-native. Cloned voices, downloaded in-app.</div>
-              </div>
-              <div class="wz-card wz-voice">
-                <div>
-                  <div class="n">Piper TTS</div>
-                  <div class="k">onnx · ~11 voices</div>
-                </div>
-                <div class="wz-chip ok">✓ downloaded</div>
-                <div class="wz-chip">▶ play sample</div>
-                <div class="wz-stat"><span>quality</span>
-                  <div class="track">
-                    <div class="fill" style="width:72%"></div>
-                  </div>
-                </div>
-                <div class="wz-stat"><span>size</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:5%"></div>
-                  </div><span class="v">60 MB</span>
-                </div>
-                <div class="wz-note">The sweet spot for most machines. Per-voice ~60 MB.</div>
-              </div>
-              <div class="wz-card wz-voice">
-                <div>
-                  <div class="n">Inflect Micro</div>
-                  <div class="k">compact neural</div>
-                </div>
-                <div class="wz-chip ok">✓ downloaded</div>
-                <div class="wz-chip">▶ play sample</div>
-                <div class="wz-stat"><span>quality</span>
-                  <div class="track">
-                    <div class="fill" style="width:55%"></div>
-                  </div>
-                </div>
-                <div class="wz-stat"><span>size</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:3%"></div>
-                  </div><span class="v">38 MB</span>
-                </div>
-                <div class="wz-note">Tiny footprint, still human-ish. Good for laptops.</div>
-              </div>
-              <div class="wz-card wz-voice">
-                <div>
-                  <div class="n">eSpeak-NG</div>
-                  <div class="k">formant synth</div>
-                </div>
-                <div class="wz-chip">bundled · nothing to download</div>
-                <div class="wz-chip">▶ play sample</div>
-                <div class="wz-stat"><span>quality</span>
-                  <div class="track">
-                    <div class="fill" style="width:30%"></div>
-                  </div>
-                </div>
-                <div class="wz-stat"><span>size</span>
-                  <div class="track">
-                    <div class="fill gold" style="width:0%"></div>
-                  </div><span class="v">none</span>
-                </div>
-                <div class="wz-note">Instant, robotic, runs anywhere. Zero download.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 07 · done -->
-          <div class="wz-frame" data-step="6">
-            <div class="wz-done">
-              <div>
-                <div class="wz-orb gold">✓</div>
-                <span class="wz-eyebrow" style="color:var(--gold-1)">// configured</span>
-                <h3 class="wz-h">VoxCtrl is <span class="gold">ready.</span></h3>
-                <p class="wz-lede">
-                  This window can close. VoxCtrl keeps running quietly in your system tray and listens for your
-                  hotkey in any app.
-                </p>
-                <div class="wz-summary">
-                  <div>
-                    <div class="k">engine</div>
-                    <div class="v">Moonshine · base</div>
-                  </div>
-                  <div>
-                    <div class="k">hotkey</div>
-                    <div class="v">Ctrl + Space · Hold to talk</div>
-                  </div>
-                  <div>
-                    <div class="k">overlay</div>
-                    <div class="v">Ocean Wave · bottom</div>
-                  </div>
-                  <div>
-                    <div class="k">voice output</div>
-                    <div class="v">Pocket TTS</div>
-                  </div>
-                </div>
-              </div>
-              <div class="wz-card">
-                <div class="wz-label">where everything lives</div>
-                <b style="font-size:16px;">Every choice is editable</b>
-                <p class="wz-lede" style="font-size:11.5px; margin-top:6px;">
-                  Nothing you picked here is locked in. Settings holds the same options plus the ones the wizard
-                  skipped — output commands, per-binding LLM cleanup, audio devices and the MCP server.
-                </p>
-                <div class="wz-settings-list">
-                  <div><span>↰ Hotkeys</span><em>gestures &amp; bindings</em></div>
-                  <div><span>∇ Engine</span><em>model &amp; device</em></div>
-                  <div><span>⬡ Visual</span><em>overlay style &amp; position</em></div>
-                  <div><span>⊕ TTS</span><em>voice output</em></div>
-                  <div><span>▷ Output Commands</span><em>where text goes</em></div>
-                </div>
-              </div>
-            </div>
+      <div class="ss fade-up" id="ss">
+        <div class="ss-stage">
+          <img class="ss-shot is-on" data-step="0" src="/voxctrl/assets/setup/01-welcome.png"
+            alt="Setup wizard step 1 of 7 — Welcome" loading="eager" />
+          <img class="ss-shot" data-step="1" src="/voxctrl/assets/setup/02-engine.png"
+            alt="Setup wizard step 2 of 7 — Engine" loading="eager" />
+          <img class="ss-shot" data-step="2" src="/voxctrl/assets/setup/03-hotkey.png"
+            alt="Setup wizard step 3 of 7 — Hotkey" loading="lazy" />
+          <img class="ss-shot" data-step="3" src="/voxctrl/assets/setup/04-overlay.png"
+            alt="Setup wizard step 4 of 7 — Overlay" loading="lazy" />
+          <img class="ss-shot" data-step="4" src="/voxctrl/assets/setup/05-test.png"
+            alt="Setup wizard step 5 of 7 — Test" loading="lazy" />
+          <img class="ss-shot" data-step="5" src="/voxctrl/assets/setup/06-voice.png"
+            alt="Setup wizard step 6 of 7 — Voice" loading="lazy" />
+          <img class="ss-shot" data-step="6" src="/voxctrl/assets/setup/07-done.png"
+            alt="Setup wizard step 7 of 7 — Done" loading="lazy" />
+          <div class="ss-pending">
+            <span class="g">⊟</span>
+            <b>Screenshot not found</b>
+            <span>Drop the capture for this step at <code id="ssPendingPath">assets/setup/…</code></span>
           </div>
         </div>
 
-        <div class="wz-foot">
-          <button class="wz-back" id="wzBack" type="button">← Back</button>
-          <div class="wz-rail" id="wzRail"></div>
-          <button class="wz-next" id="wzNext" type="button">Get started →</button>
+        <div class="ss-bar">
+          <button class="ss-btn" id="ssPrev" type="button" aria-label="Previous step">←</button>
+          <button class="ss-btn" id="ssPlay" type="button" aria-label="Pause the slideshow">❚❚&nbsp;pause</button>
+          <button class="ss-btn" id="ssNext" type="button" aria-label="Next step">→</button>
+          <div class="ss-dots" id="ssDots">
+          <button class="ss-dot is-on" type="button" data-go="0">01&nbsp;Welcome</button>
+          <button class="ss-dot" type="button" data-go="1">02&nbsp;Engine</button>
+          <button class="ss-dot" type="button" data-go="2">03&nbsp;Hotkey</button>
+          <button class="ss-dot" type="button" data-go="3">04&nbsp;Overlay</button>
+          <button class="ss-dot" type="button" data-go="4">05&nbsp;Test</button>
+          <button class="ss-dot" type="button" data-go="5">06&nbsp;Voice</button>
+          <button class="ss-dot" type="button" data-go="6">07&nbsp;Done</button>
+          </div>
         </div>
-      </div>
 
-      <div class="wz-under fade-up">
-        <button class="wz-play" id="wzPlay" type="button" aria-label="Pause the walkthrough">❚❚ pause</button>
-        <div class="wz-progress">
-          <i id="wzBar"></i>
+        <div class="ss-progress">
+          <i id="ssBar"></i>
         </div>
-        <p class="wz-caption" id="wzCap"><b>Welcome.</b> What the next few minutes will cover.</p>
+        <p class="ss-caption" id="ssCap"></p>
       </div>
 
       <p class="lead fade-up" style="margin-top: 26px;">
@@ -760,7 +287,7 @@
     </div>
   </section>
 
-  <!-- ── settings showcase ── -->
+  <!-- ── settings gallery ── -->
   <section class="section section-bordered" id="settings">
     <div class="shell">
       <span class="eyebrow fade-up">// settings</span>
@@ -770,130 +297,24 @@
         ten tabs of things that actually take effect — and each one explains, in the window, what it does.
       </p>
 
-      <div class="appwin fade-up">
-        <div class="appwin-bar">
-          <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span class="t">VoxCtrl Settings</span>
-          <span class="wbtn"></span><span class="wbtn"></span><span class="wbtn x"></span>
+      <div class="fade-up" id="sg">
+        <div class="sg-tabs" id="sgTabs">
+          <button class="sg-tab is-on" type="button" data-sg="0">General</button>
+          <button class="sg-tab" type="button" data-sg="1">Output Commands</button>
         </div>
-        <div class="st-win">
-          <div class="st-side">
-            <div class="brand">
-              <img src="/voxctrl/assets/voxctrl.gif" alt="" />
-              <span><b>VoxCtrl</b><em>desktop panel</em></span>
-            </div>
-            <button class="st-tab on" data-st="general" type="button"><span>⚙</span> General</button>
-            <button class="st-tab" data-st="commands" type="button"><span>◎</span> Output Commands</button>
-            <button class="st-tab" type="button" disabled><span>▤</span> Engine</button>
-            <button class="st-tab" type="button" disabled><span>⌨</span> Hotkeys</button>
-            <button class="st-tab" type="button" disabled><span>◍</span> Visual</button>
-            <button class="st-tab" type="button" disabled><span>♪</span> Audio</button>
-            <button class="st-tab" type="button" disabled><span>◗</span> TTS</button>
-            <button class="st-tab" type="button" disabled><span>✦</span> Features</button>
-            <button class="st-tab" type="button" disabled><span>⊞</span> OpenAI API</button>
-            <button class="st-tab" type="button" disabled><span>ℹ</span> About</button>
-          </div>
-
-          <div class="st-body">
-            <div class="st-panel on" data-stp="general">
-              <h3 class="st-h">General</h3>
-              <p class="st-sub">Setup, updates, and the local MCP JSON-RPC server.</p>
-
-              <div class="st-group">
-                <span class="cap">Setup</span>
-                <div class="st-row">
-                  <span class="lbl">Run the first-launch setup wizard again</span>
-                  <span class="st-btn">Open setup wizard</span>
-                </div>
-                <p class="st-help">Walks through the engine, model, hotkey, overlay and voice choices in one flow, and
-                  downloads whatever it needs. Your current settings stay in place until you change them in the wizard.
-                </p>
-              </div>
-
-              <div class="st-group">
-                <span class="cap">Updates</span>
-                <div class="st-row">
-                  <span class="lbl">Check for a new version on launch</span>
-                  <span class="wz-switch"></span>
-                </div>
-                <p class="st-help">Asks GitHub once, shortly after startup, whether a newer release has been published,
-                  and offers to install it. The request carries nothing about you or your machine, and it is the only
-                  network request VoxCtrl makes on its own. Turn it off and VoxCtrl never contacts GitHub unless you
-                  press "Check now".</p>
-                <div class="st-row" style="margin-top:10px;">
-                  <span class="lbl">Check now</span>
-                  <span class="st-btn">Check for updates</span>
-                </div>
-              </div>
-
-              <div class="st-group">
-                <span class="cap">MCP server</span>
-                <div class="st-row"><span class="lbl">Enable MCP JSON-RPC server</span><span
-                    class="wz-switch"></span></div>
-                <div class="st-row"><span class="lbl">Visual feedback</span><span class="wz-switch"></span></div>
-                <div class="st-row"><span class="lbl">Record timeout (seconds)</span><span class="st-num">15</span>
-                </div>
-                <p class="st-help">How long <code>transcribe_voice</code> listens when the calling agent does not ask
-                  for a specific timeout. An explicit <code>timeout_seconds</code> in the tool call still wins.</p>
-                <p class="st-help">Socket: <code>/tmp/voxctrl-mcp.sock</code> (Linux) / <code>\\.\pipe\voxctrl-mcp</code>
-                  (Windows)</p>
-              </div>
-            </div>
-
-            <div class="st-panel" data-stp="commands">
-              <h3 class="st-h">Output Commands</h3>
-              <p class="st-sub">Define routing destinations where transcribed text is typed, copied, piped, or sent over
-                network sockets.</p>
-
-              <div class="st-callout">
-                <b>Saying a command by name.</b> Start dictation and say <code>"VoxCtrl"</code>, then the command's
-                name, then what you want to send — for example <code>"VoxCtrl notes, remember to call the plumber"</code>
-                routes <code>remember to call the plumber</code> to the command named <b>notes</b>. Everything after the
-                name is the text. Natural phrasing works too (<code>"VoxCtrl, add this to my notes: …"</code>). Say
-                nothing of the sort and dictation goes wherever your hotkey already points.
-              </div>
-
-              <span class="st-add">+ Add New Output Command</span>
-
-              <div class="st-cmd">
-                <div class="top">
-                  <div>
-                    <div class="n">Notes</div>
-                    <div class="s">File: ~/.notes</div>
-                  </div><span class="st-badge">FILE</span>
-                </div>
-                <div class="st-actions"><b>Edit</b><b class="del">Delete</b></div>
-              </div>
-              <div class="st-cmd">
-                <div class="top">
-                  <div>
-                    <div class="n">Personal Notes</div>
-                    <div class="s">File: ~/.notes.txt</div>
-                  </div><span class="st-badge">FILE</span>
-                </div>
-                <div class="st-actions"><b>Edit</b><b class="del">Delete</b></div>
-              </div>
-              <div class="st-cmd">
-                <div class="top">
-                  <div>
-                    <div class="n">Say</div>
-                    <div class="s">Speech: Plays transcribed text via TTS</div>
-                  </div><span class="st-badge">SPEAK</span>
-                </div>
-                <div class="st-actions"><b>Edit</b><b class="del">Delete</b></div>
-              </div>
-              <div class="st-cmd">
-                <div class="top">
-                  <div>
-                    <div class="n">Command</div>
-                    <div class="s">Voice Command Router</div>
-                  </div><span class="st-badge">COMMAND</span>
-                </div>
-                <div class="st-actions"><b>Edit</b><b class="del">Delete</b></div>
-              </div>
-            </div>
+        <div class="sg-stage">
+          <img class="sg-shot is-on" data-sg="0" src="/voxctrl/assets/settings/general.png"
+            alt="VoxCtrl Settings — General: setup wizard, update checking, and the MCP server." loading="lazy" />
+          <img class="sg-shot" data-sg="1" src="/voxctrl/assets/settings/output-commands.png"
+            alt="VoxCtrl Settings — Output Commands: named routing destinations and how to say one by name."
+            loading="lazy" />
+          <div class="ss-pending" id="sgPending">
+            <span class="g">⊟</span>
+            <b>Screenshot not found</b>
+            <span>Drop the capture at <code id="sgPendingPath">assets/settings/…</code></span>
           </div>
         </div>
+        <p class="sg-note" id="sgNote"></p>
       </div>
 
       <p class="lead fade-up" style="margin-top: 26px;">
