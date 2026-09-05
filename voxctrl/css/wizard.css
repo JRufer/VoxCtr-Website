@@ -1,0 +1,298 @@
+/* ═══════════════════════════════════════════════════════
+   voxctrl — First-run slideshow + Settings gallery
+   Plays the real setup-wizard screenshots as a slideshow.
+   The captures already include the app's own window chrome
+   and step rail, so nothing here frames them a second time.
+   ═══════════════════════════════════════════════════════ */
+
+.ss {
+  position: relative;
+}
+
+/* ───────── stage ───────── */
+.ss-stage {
+  position: relative;
+  aspect-ratio: 1340 / 1096;
+  max-height: 74vh;
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 420px at 70% -10%, rgba(34, 212, 239, .05), transparent 70%),
+    var(--bg-1);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+}
+
+.ss-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.012);
+  transition: opacity .5s ease, transform .7s cubic-bezier(.22, .61, .36, 1), visibility .5s;
+}
+
+.ss-shot.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-shot {
+    transition: opacity .2s linear;
+    transform: none !important;
+  }
+}
+
+/* A missing file must not leave its alt text sitting over the pending panel. */
+.ss-shot.is-missing,
+.sg-shot.is-missing {
+  display: none;
+}
+
+/* Shown in place of a slide whose file is not on disk yet. */
+.ss-pending {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+  color: var(--txt-2);
+}
+
+.ss-shot.is-missing + .ss-pending,
+.ss-pending.is-on {
+  display: flex;
+}
+
+.ss-pending .g {
+  font-family: var(--mono);
+  font-size: 26px;
+  color: var(--txt-3);
+}
+
+.ss-pending b {
+  color: var(--txt-1);
+  font-size: 15px;
+}
+
+.ss-pending code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--cyan-1);
+  background: rgba(34, 212, 239, .07);
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+/* ───────── controls ───────── */
+.ss-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.ss-btn {
+  border: 1px solid var(--line-2);
+  background: var(--bg-1);
+  color: var(--txt-1);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 13px;
+  cursor: pointer;
+  flex: none;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.ss-btn:hover {
+  color: var(--cyan-1);
+  border-color: var(--cyan-d);
+}
+
+.ss-btn:focus-visible {
+  outline: 2px solid var(--cyan-0);
+  outline-offset: 2px;
+}
+
+/* step rail — the slide index, not a second copy of the app's own rail */
+.ss-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.ss-dot {
+  border: 0;
+  background: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--txt-3);
+  border-bottom: 2px solid var(--line);
+  transition: color .2s ease, border-color .2s ease;
+}
+
+.ss-dot:hover {
+  color: var(--txt-1);
+}
+
+.ss-dot.is-on {
+  color: var(--cyan-1);
+  border-bottom-color: var(--cyan-0);
+}
+
+.ss-dot.is-done {
+  color: var(--txt-2);
+  border-bottom-color: var(--cyan-d);
+}
+
+.ss-dot:focus-visible {
+  outline: 2px solid var(--cyan-0);
+  outline-offset: 2px;
+}
+
+.ss-progress {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.ss-progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--cyan-0);
+}
+
+.ss-caption {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--txt-2);
+  min-height: 3em;
+}
+
+.ss-caption b {
+  color: var(--txt-0);
+  font-weight: 600;
+}
+
+.ss-caption .step {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--cyan-2);
+  letter-spacing: .1em;
+  margin-right: 8px;
+}
+
+/* ───────── settings gallery ───────── */
+.sg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.sg-tab {
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  color: var(--txt-1);
+  border-radius: 9px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.sg-tab:hover {
+  color: var(--txt-0);
+  border-color: var(--line-2);
+}
+
+.sg-tab.is-on {
+  color: var(--cyan-1);
+  border-color: rgba(34, 212, 239, .45);
+  background: linear-gradient(180deg, rgba(34, 212, 239, .08), transparent 70%), var(--bg-1);
+}
+
+.sg-tab:focus-visible {
+  outline: 2px solid var(--cyan-0);
+  outline-offset: 2px;
+}
+
+.sg-stage {
+  position: relative;
+  aspect-ratio: 872 / 1024;
+  max-height: 78vh;
+  max-width: 720px;
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-1);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+}
+
+.sg-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .35s ease, visibility .35s;
+}
+
+.sg-shot.is-on {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sg-note {
+  margin-top: 14px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--txt-2);
+  text-align: center;
+}
+
+/* ───────── responsive ───────── */
+@media (max-width: 760px) {
+  .ss-stage {
+    max-height: none;
+  }
+
+  .ss-dots {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  .ss-bar {
+    justify-content: center;
+  }
+
+  .sg-stage {
+    max-height: none;
+  }
+}

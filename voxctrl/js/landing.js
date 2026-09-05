@@ -129,3 +129,149 @@ document.addEventListener('keydown', (e) => {
     } catch { /* leave static fallback */ }
   }
 })();
+
+/* ─────────── first-run slideshow ───────────
+   Plays the setup-wizard captures in order, the way someone would step
+   through the wizard. The screenshots already carry the app's own chrome and
+   step rail, so this only advances them and reports where we are. Hovering,
+   or scrolling the section out of view, pauses it. */
+(function () {
+  const root = document.getElementById('ss');
+  if (!root) return;
+
+  const shots = Array.from(root.querySelectorAll('.ss-shot'));
+  const dots = Array.from(root.querySelectorAll('.ss-dot'));
+  const pending = root.querySelector('.ss-pending');
+  const pendingPath = document.getElementById('ssPendingPath');
+  const playBtn = document.getElementById('ssPlay');
+  const barEl = document.getElementById('ssBar');
+  const capEl = document.getElementById('ssCap');
+
+  const STEPS = [
+    { label: 'Welcome', text: 'What the next few minutes cover — and a promise that none of it is permanent.' },
+    { label: 'Engine', text: 'whisper.cpp or Moonshine, and a model size. The wizard downloads it before you can continue.' },
+    { label: 'Hotkey', text: 'Pick a gesture, record the keys. The binding is registered through the desktop portal, live, before you leave the step.' },
+    { label: 'Overlay', text: 'Eight overlay styles and three positions — or no overlay at all, and just the tray icon.' },
+    { label: 'Test', text: 'Hold the binding you just made and watch real transcription land in a real text box.' },
+    { label: 'Voice', text: 'Optional. Five TTS engines, sampled in place, from a 38 MB neural voice to a 1.2 GB one.' },
+    { label: 'Done', text: 'A summary of every choice, where to change each one, and where the tray icon lives.' }
+  ];
+
+  const HOLD_MS = 5200;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let cur = 0;
+  let playing = !reduced;
+  let elapsed = 0;
+  let last = 0;
+  let hovering = false;
+  let visible = true;
+
+  /* A slide whose file is not on disk yet shows the pending panel instead of a
+     broken-image icon, so the section degrades legibly before the captures land. */
+  shots.forEach((img) => {
+    img.addEventListener('error', () => { img.classList.add('is-missing'); if (shots[cur] === img) render(); });
+    if (img.complete && img.naturalWidth === 0) img.classList.add('is-missing');
+  });
+
+  function render() {
+    shots.forEach((s, i) => s.classList.toggle('is-on', i === cur));
+    dots.forEach((d, i) => {
+      d.classList.toggle('is-on', i === cur);
+      d.classList.toggle('is-done', i < cur);
+      d.setAttribute('aria-current', i === cur ? 'true' : 'false');
+    });
+    const s = STEPS[cur];
+    capEl.innerHTML = '<span class="step">STEP ' + (cur + 1) + ' / ' + STEPS.length +
+      '</span><b>' + s.label + '.</b> ' + s.text;
+    const missing = shots[cur].classList.contains('is-missing');
+    pending.classList.toggle('is-on', missing);
+    if (missing) pendingPath.textContent = shots[cur].getAttribute('src').replace('/voxctrl/', '');
+  }
+
+  function go(i) {
+    cur = (i + STEPS.length) % STEPS.length;
+    elapsed = 0;
+    render();
+  }
+
+  function pause() {
+    if (!playing) return;
+    playing = false;
+    playBtn.innerHTML = '\u25B6\u00A0play';
+    playBtn.setAttribute('aria-label', 'Play the slideshow');
+  }
+
+  function play() {
+    if (playing) return;
+    playing = true;
+    playBtn.innerHTML = '\u275A\u275A\u00A0pause';
+    playBtn.setAttribute('aria-label', 'Pause the slideshow');
+  }
+
+  function tick(now) {
+    const held = !playing || hovering || !visible;
+    if (!held && last) elapsed += now - last;
+    last = now;
+    const frac = Math.min(1, elapsed / HOLD_MS);
+    barEl.style.width = (frac * 100).toFixed(1) + '%';
+    if (!held && frac >= 1) go(cur + 1);
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('ssNext').addEventListener('click', () => { pause(); go(cur + 1); });
+  document.getElementById('ssPrev').addEventListener('click', () => { pause(); go(cur - 1); });
+  playBtn.addEventListener('click', () => (playing ? pause() : play()));
+  dots.forEach((d) => d.addEventListener('click', () => { pause(); go(+d.dataset.go); }));
+  root.addEventListener('pointerenter', () => { hovering = true; });
+  root.addEventListener('pointerleave', () => { hovering = false; });
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { pause(); go(cur + 1); }
+    if (e.key === 'ArrowLeft') { pause(); go(cur - 1); }
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; }, { threshold: 0.2 })
+      .observe(root);
+  }
+
+  render();
+  if (reduced) { playBtn.innerHTML = '\u25B6\u00A0play'; }
+  requestAnimationFrame(tick);
+})();
+
+/* ─────────── settings gallery ─────────── */
+(function () {
+  const root = document.getElementById('sg');
+  if (!root) return;
+
+  const NOTES = [
+    'Settings \u2192 General. The setup wizard, update checking, and the local MCP JSON-RPC server.',
+    'Settings \u2192 Output Commands. Named destinations for transcribed text \u2014 and how to call one by name mid-dictation.',
+  ];
+
+  const tabs = Array.from(root.querySelectorAll('.sg-tab'));
+  const shots = Array.from(root.querySelectorAll('.sg-shot'));
+  const pending = document.getElementById('sgPending');
+  const pendingPath = document.getElementById('sgPendingPath');
+  const note = document.getElementById('sgNote');
+  let cur = 0;
+
+  shots.forEach((img) => {
+    img.addEventListener('error', () => { img.classList.add('is-missing'); if (shots[cur] === img) show(cur); });
+    if (img.complete && img.naturalWidth === 0) img.classList.add('is-missing');
+  });
+
+  function show(i) {
+    cur = i;
+    tabs.forEach((t, n) => t.classList.toggle('is-on', n === i));
+    shots.forEach((s, n) => s.classList.toggle('is-on', n === i));
+    note.textContent = NOTES[i];
+    const missing = shots[i].classList.contains('is-missing');
+    pending.classList.toggle('is-on', missing);
+    if (missing) pendingPath.textContent = shots[i].getAttribute('src').replace('/voxctrl/', '');
+  }
+
+  tabs.forEach((t) => t.addEventListener('click', () => show(+t.dataset.sg)));
+  show(0);
+})();

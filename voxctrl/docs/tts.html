@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Voice Output (TTS) — voxctrl Docs</title>
   <meta name="description"
-    content="On-device neural TTS via Piper and Pocket-TTS voice cloning, with espeak-ng as automatic fallback." />
+    content="Five on-device TTS engines — Breeze-TTS-2, Pocket-TTS, Piper, Inflect-Micro-v2 and eSpeak-NG — with in-app model downloads." />
   <link rel="icon" href="/voxctrl/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,10 +32,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -53,13 +54,14 @@
         <span class="h">Getting started</span>
         <a class="item" href="/voxctrl/docs/quickstart.html"><span class="glyph">&#x2303;</span> Quickstart</a>
         <a class="item" href="/voxctrl/docs/install.html"><span class="glyph">&#x229E;</span> Installation</a>
+        <a class="item" href="/voxctrl/docs/setup.html"><span class="glyph">&#x2726;</span> Setup wizard</a>
         <a class="item" href="/voxctrl/docs/concepts.html"><span class="glyph">&#x25C7;</span> Core concepts</a>
       </div>
       <div class="group">
         <span class="h">Input &amp; routing</span>
         <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
         <a class="item" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
-          targets</a>
+          commands</a>
         <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
         <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
       </div>
@@ -84,14 +86,22 @@
     <main class="docs-content" id="docsContent">
       <div class="crumbs">AI &amp; VOICE <span>/</span> VOICE OUTPUT</div>
       <h1>Voice output (TTS)</h1>
-      <p class="lede">On-device neural TTS with three engines: Piper (primary, ONNX neural), Pocket-TTS (Kyutai's
-        voice-cloning neural engine), and espeak-ng as a lightweight automatic fallback.</p>
+      <p class="lede">Five on-device TTS engines, from a 1.2 GB expressive neural model down to a bundled formant
+        synth. Pick one in Settings → TTS, or on the setup wizard's Voice step — which plays a sample from each before
+        you commit to a download.</p>
 
       <h2>Engines</h2>
       <ul>
+        <li><strong>Breeze-TTS-2</strong> — an open-weight bilingual (English/Chinese) model from BreezeBlue, built for
+          low-latency real-time interaction and the most expressive of the five. It supports <em>Voice Design</em>:
+          describe the speaker you want in natural language (<code>breeze_tts_2.speaker_prompt</code>) rather than
+          picking from a list, or switch <code>voice_mode</code> to <code>"clone"</code> and use a reference clip. Its
+          weights are gated and released under the BreezeBlue Research and Non-Commercial License — commercial use
+          needs separate written authorization from RESONIA, INC.
+        </li>
         <li><strong>Piper</strong> — a fast, local neural TTS system using ONNX models. VoxCtrl invokes the
           <code>piper</code> binary directly, pipes text to its stdin, and plays the raw 16-bit PCM it returns via
-          <code>rodio</code>. This is the default engine.
+          <code>rodio</code>. The sweet spot for most machines at roughly 60 MB per voice.
         </li>
         <li><strong>Pocket-TTS</strong> — Kyutai's lightweight FlowLM + Mimi-codec model, ported to pure Rust on top
           of Candle (no Python, no ONNX, no subprocess). Instead of fixed voice embeddings, it clones a voice from a
@@ -101,16 +111,35 @@
           the <code>prewarm</code> option. Requires a HuggingFace account that has accepted the license for the
           gated <code>kyutai/pocket-tts</code> model, plus a personal access token (<code>hf_token</code>).
         </li>
-        <li><strong>Espeak-ng</strong> — used automatically if Piper is unavailable or no voice is downloaded.
-          Quality is lower, but it's always available as a system package.
+        <li><strong>Inflect-Micro-v2</strong> — a ~9.4M-parameter VITS-family model (37.5 MB FP32, Apache 2.0)
+          producing 24 kHz mono from a single fixed English voice. The smallest neural option, running in-process
+          through ONNX Runtime with no subprocess. Graph signatures are verified at load; Settings → TTS → Inspect
+          graphs reports the signature of a downloaded model.
+        </li>
+        <li><strong>eSpeak-NG</strong> — the default, because it is a system package with nothing to download. Used
+          automatically if the selected engine is unavailable or no voice has been fetched. Quality is lower, but it is
+          always there.
         </li>
       </ul>
 
+      <div class="note"><span class="icon">ⓘ</span> <strong>One token for both gated engines.</strong> Pocket-TTS and
+        Breeze-TTS-2 share a single <code>tts.hf_token</code>. The wizard's Voice step asks for it, and Settings → TTS
+        edits the same value. An exported <code>HF_TOKEN</code> takes precedence: it is shown read-only in both fields
+        and is never written to your config. A config written when each engine kept its own copy is migrated to this
+        key on load.</div>
+
       <h2>GPU acceleration</h2>
-      <p>VoxCtrl supports GPU acceleration (CUDA) for the <strong>Piper</strong> engine only — it appends a
-        <code>--cuda</code> flag to the spawned Piper subprocess at runtime. Pocket-TTS (Candle-based) does not
-        currently expose a GPU toggle. If GPU initialization fails, Piper automatically and gracefully falls back to
-        the CPU without crashing.</p>
+      <p>Two engines can use a GPU:</p>
+      <ul>
+        <li><strong>Piper</strong> (<code>tts.gpu</code>) — appends a <code>--cuda</code> flag to the spawned Piper
+          subprocess at runtime. If GPU initialization fails, Piper falls back to the CPU without crashing.</li>
+        <li><strong>Breeze-TTS-2</strong> (<code>tts.breeze_tts_2.gpu</code>) — loads the model onto a candle GPU
+          device instead of the CPU. Needs the app built with the <code>breeze-cuda</code> (NVIDIA) or
+          <code>breeze-metal</code> (macOS) feature on <code>voxctrl-tts</code>. Toggling it reloads the model, since
+          the device is fixed at load; if the load fails, Breeze logs the reason and reloads on the CPU.</li>
+      </ul>
+      <p>Pocket-TTS shares Breeze's runtime but exposes no GPU toggle of its own, and Inflect-Micro-v2 runs on ONNX
+        Runtime's CPU provider — it is small enough that this is rarely the bottleneck.</p>
 
       <h2>Piper voice catalog</h2>
       <table class="docs-table">
@@ -223,12 +252,14 @@
       <h2>Setup</h2>
       <ul>
         <li>Open Settings → TTS</li>
-        <li>Pick an engine (Piper, Pocket-TTS, or Espeak-ng) and a voice from the dropdown</li>
+        <li>Pick an engine (Breeze-TTS-2, Pocket-TTS, Piper, Inflect-Micro-v2 or eSpeak-NG) and a voice from the
+          dropdown</li>
         <li>Click <strong>⬇ Download</strong> — progress bar in-app; Piper voices land in
           <code>~/.local/share/voxctrl/piper-voices/</code>, Pocket-TTS model weights and voice clips are cached via
           the HuggingFace cache (<code>~/.cache/huggingface/hub/</code>)
         </li>
-        <li>For Pocket-TTS, supply your HuggingFace token (<code>hf_token</code>) to download the gated model</li>
+        <li>For Pocket-TTS and Breeze-TTS-2, supply your HuggingFace token (<code>hf_token</code>) — one token
+          covers both gated models</li>
         <li>Click <strong>▶ Test Voice</strong> to preview</li>
         <li>Toggle <strong>Enable TTS</strong></li>
       </ul>
@@ -274,8 +305,8 @@
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -289,7 +320,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

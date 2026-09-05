@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>voxctrl — the audio control layer for your AI stack</title>
   <meta name="description"
-    content="voxctrl is a programmable voice broker for Linux and Windows. 100% on-device Whisper transcription, per-target routing, MCP server, and neural TTS. MIT licensed." />
+    content="voxctrl is a programmable voice broker for Linux and Windows. A seven-step first-run setup, 100% on-device transcription, thirteen delivery types, an MCP server, and five local TTS engines. MIT licensed." />
   <link rel="icon" href="/voxctrl/assets/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/voxctrl/css/base.css" />
   <link rel="stylesheet" href="/voxctrl/css/components.css" />
   <link rel="stylesheet" href="/voxctrl/css/docs.css" />
+  <link rel="stylesheet" href="/voxctrl/css/wizard.css" />
   <link rel="stylesheet" href="/voxctrl/css/responsive.css" />
 </head>
 
@@ -32,10 +33,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link is-active" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -167,10 +169,10 @@
       <div class="metrics fade-up" style="margin-top: 48px;">
         <div class="metric">
           <div class="v">∞</div>
-          <div class="l">Output Targets</div>
+          <div class="l">Output Commands</div>
         </div>
         <div class="metric">
-          <div class="v">9</div>
+          <div class="v">13</div>
           <div class="l">Delivery Types</div>
         </div>
         <div class="metric">
@@ -178,7 +180,7 @@
           <div class="l">Inference Backends</div>
         </div>
         <div class="metric">
-          <div class="v">280+</div>
+          <div class="v">740+</div>
           <div class="l">Tests Passing</div>
         </div>
       </div>
@@ -208,14 +210,120 @@
             <div class="pb-item"><span class="pb-glyph">∗</span><b>100% on-device</b><span>Whisper runs against your
                 CPU/GPU. Audio buffers never leave RAM.</span></div>
             <div class="pb-item"><span class="pb-glyph">⊘</span><b>Zero telemetry</b><span>No analytics, no crash
-                reporters, no phone-home on launch or update.</span></div>
+                reporters. The only request voxctrl makes on its own is the update check — and one tick in
+                Settings turns it off.</span></div>
             <div class="pb-item"><span class="pb-glyph">◯</span><b>Offline after setup</b><span>Models download once,
-                then run locally forever. No network calls during use.</span></div>
+                then run locally forever. Air-gapped machines work fine.</span></div>
             <div class="pb-item"><span class="pb-glyph">◇</span><b>MIT &amp; auditable</b><span>Every byte of the
                 pipeline is open source. Read it, fork it, run it.</span></div>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ── first-run slideshow ── -->
+  <section class="section section-bordered" id="setup">
+    <div class="shell">
+      <span class="eyebrow fade-up">// first run</span>
+      <h2 class="h-section fade-up">Seven steps. <span class="accent-gold">Then it just works.</span></h2>
+      <p class="lead fade-up" style="margin-bottom: 28px;">
+        New in v0.4.0: a first-run wizard walks a fresh machine through the whole setup — engine, hotkey,
+        overlay, a live dictation test, and an optional voice — instead of dropping you into a settings
+        window full of defaults nobody chose. Every choice is written to disk as you make it, so quitting
+        halfway keeps what you picked. Here it is, screen by screen.
+      </p>
+
+      <div class="ss fade-up" id="ss">
+        <div class="ss-stage">
+          <img class="ss-shot is-on" data-step="0" src="/voxctrl/assets/setup/01-welcome.png"
+            alt="Setup wizard step 1 of 7 — Welcome" loading="eager" />
+          <img class="ss-shot" data-step="1" src="/voxctrl/assets/setup/02-engine.png"
+            alt="Setup wizard step 2 of 7 — Engine" loading="eager" />
+          <img class="ss-shot" data-step="2" src="/voxctrl/assets/setup/03-hotkey.png"
+            alt="Setup wizard step 3 of 7 — Hotkey" loading="lazy" />
+          <img class="ss-shot" data-step="3" src="/voxctrl/assets/setup/04-overlay.png"
+            alt="Setup wizard step 4 of 7 — Overlay" loading="lazy" />
+          <img class="ss-shot" data-step="4" src="/voxctrl/assets/setup/05-test.png"
+            alt="Setup wizard step 5 of 7 — Test" loading="lazy" />
+          <img class="ss-shot" data-step="5" src="/voxctrl/assets/setup/06-voice.png"
+            alt="Setup wizard step 6 of 7 — Voice" loading="lazy" />
+          <img class="ss-shot" data-step="6" src="/voxctrl/assets/setup/07-done.png"
+            alt="Setup wizard step 7 of 7 — Done" loading="lazy" />
+          <div class="ss-pending">
+            <span class="g">⊟</span>
+            <b>Screenshot not found</b>
+            <span>Drop the capture for this step at <code id="ssPendingPath">assets/setup/…</code></span>
+          </div>
+        </div>
+
+        <div class="ss-bar">
+          <button class="ss-btn" id="ssPrev" type="button" aria-label="Previous step">←</button>
+          <button class="ss-btn" id="ssPlay" type="button" aria-label="Pause the slideshow">❚❚&nbsp;pause</button>
+          <button class="ss-btn" id="ssNext" type="button" aria-label="Next step">→</button>
+          <div class="ss-dots" id="ssDots">
+          <button class="ss-dot is-on" type="button" data-go="0">01&nbsp;Welcome</button>
+          <button class="ss-dot" type="button" data-go="1">02&nbsp;Engine</button>
+          <button class="ss-dot" type="button" data-go="2">03&nbsp;Hotkey</button>
+          <button class="ss-dot" type="button" data-go="3">04&nbsp;Overlay</button>
+          <button class="ss-dot" type="button" data-go="4">05&nbsp;Test</button>
+          <button class="ss-dot" type="button" data-go="5">06&nbsp;Voice</button>
+          <button class="ss-dot" type="button" data-go="6">07&nbsp;Done</button>
+          </div>
+        </div>
+
+        <div class="ss-progress">
+          <i id="ssBar"></i>
+        </div>
+        <p class="ss-caption" id="ssCap"></p>
+      </div>
+
+      <p class="lead fade-up" style="margin-top: 26px;">
+        Run it again whenever you like: <code
+          style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,.06);padding:2px 7px;border-radius:5px;">voxctrl
+          --setup</code>, or Settings → General → <b>Open setup wizard</b>. Your current settings stay in
+        place until you change them in the wizard.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── settings gallery ── -->
+  <section class="section section-bordered" id="settings">
+    <div class="shell">
+      <span class="eyebrow fade-up">// settings</span>
+      <h2 class="h-section fade-up">One window. Nothing in it that does nothing.</h2>
+      <p class="lead fade-up" style="margin-bottom: 28px;">
+        v0.4.0 audited every control in Settings and either implemented it or removed it. What is left is
+        ten tabs of things that actually take effect — and each one explains, in the window, what it does.
+      </p>
+
+      <div class="fade-up" id="sg">
+        <div class="sg-tabs" id="sgTabs">
+          <button class="sg-tab is-on" type="button" data-sg="0">General</button>
+          <button class="sg-tab" type="button" data-sg="1">Output Commands</button>
+        </div>
+        <div class="sg-stage">
+          <img class="sg-shot is-on" data-sg="0" src="/voxctrl/assets/settings/general.png"
+            alt="VoxCtrl Settings — General: setup wizard, update checking, and the MCP server." loading="lazy" />
+          <img class="sg-shot" data-sg="1" src="/voxctrl/assets/settings/output-commands.png"
+            alt="VoxCtrl Settings — Output Commands: named routing destinations and how to say one by name."
+            loading="lazy" />
+          <div class="ss-pending" id="sgPending">
+            <span class="g">⊟</span>
+            <b>Screenshot not found</b>
+            <span>Drop the capture at <code id="sgPendingPath">assets/settings/…</code></span>
+          </div>
+        </div>
+        <p class="sg-note" id="sgNote"></p>
+      </div>
+
+      <p class="lead fade-up" style="margin-top: 26px;">
+        <b style="color:var(--txt-0)">Output Targets are now Output Commands.</b> The name changed because that is
+        what they are — named destinations you can call by voice. Your <code
+          style="font-family:var(--mono);color:var(--cyan-1);">targets.toml</code> and its <code
+          style="font-family:var(--mono);color:var(--cyan-1);">[[target]]</code> blocks keep their names on disk, so an
+        existing config needs no changes.
+      </p>
     </div>
   </section>
 
@@ -236,12 +344,11 @@
         <div class="pipeline-grid">
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>◉ INPUT</b><span>evdev</span></div>
+              <div class="head"><b>◉ INPUT</b><span>xdg portal</span></div>
               <div class="row"><span>Hold</span><code>super+space</code></div>
               <div class="row"><span>Toggle</span><code>ctrl+super+space</code></div>
               <div class="row"><span>Double-tap</span><code>alt</code></div>
               <div class="row"><span>Double-tap+hold</span><code>super</code></div>
-              <div class="row"><span>Chord</span><code>ctrl+super → z</code></div>
             </div>
             <div class="pl-block">
               <div class="head"><b>↯ CAPTURE</b><span>vad</span></div>
@@ -286,7 +393,7 @@
 
           <div class="pl-col">
             <div class="pl-block">
-              <div class="head"><b>⊳ ROUTE</b><span>9 types</span></div>
+              <div class="head"><b>⊳ ROUTE</b><span>13 types</span></div>
               <div class="row"><span>inject</span><code>at-spi2</code></div>
               <div class="row"><span>clipboard</span><code>wl-copy</code></div>
               <div class="row"><span>exec</span><code>shell=false</code></div>
@@ -295,7 +402,11 @@
               <div class="row"><span>file</span><code>append</code></div>
               <div class="row"><span>dbus</span><code>signal</code></div>
               <div class="row"><span>http</span><code>POST</code></div>
-              <div class="row"><span>webhook</span><code>POST + headers</code></div>
+              <div class="row"><span>webhook</span><code>hmac-sha256</code></div>
+              <div class="row"><span>mcp</span><code>tools/call</code></div>
+              <div class="row"><span>speak</span><code>tts</code></div>
+              <div class="row"><span>chat</span><code>/v1/chat/completions</code></div>
+              <div class="row"><span>command</span><code>"voxctrl notes …"</code></div>
             </div>
             <div class="pl-block" style="background: linear-gradient(180deg, rgba(34,212,239,0.06), transparent);">
               <div class="head"><b>↺ RESPOND</b><span>loop</span></div>
@@ -322,12 +433,15 @@
           <span class="corner">01</span>
           <span class="glyph">⌁</span>
           <h3 class="h-card">Global hotkeys</h3>
-          <p class="desc">evdev-based input listener on Linux (Wayland + X11) and Win32 hooks on Windows. Five gesture
-            types — hold, toggle, double-tap, double-tap &amp; hold, and chord — each mapped to a different output.</p>
+          <p class="desc">Shortcuts are registered with your desktop through the XDG <code
+              style="font-family:var(--mono);color:var(--cyan-1)">GlobalShortcuts</code> portal on Linux (Wayland + X11)
+            and Win32 hooks on Windows. Four gesture types — hold, toggle, double-tap and double-tap &amp; hold — each
+            mapped to a different output.</p>
           <ul>
-            <li>Superset shadowing prevents combo conflicts</li>
-            <li>Bare-key bindings &amp; chord (base-keys + subkey) combos</li>
-            <li>Per-binding gesture settings</li>
+            <li>voxctrl is never given your keystrokes — only that its own shortcut fired</li>
+            <li>No udev rule, no <code style="font-family:var(--mono);color:var(--cyan-1)">input</code> group, nothing
+              to grant</li>
+            <li>Per-binding gesture timings &amp; multi-command fan-out</li>
           </ul>
         </div>
         <div class="card"
@@ -373,11 +487,11 @@
           <span class="corner">05</span>
           <span class="glyph">⊕</span>
           <h3 class="h-card">Neural TTS &amp; loopback</h3>
-          <p class="desc">Piper (ONNX neural voices) or Pocket-TTS (Rust voice-cloning) for high-quality on-device
-            speech, with espeak-ng as a lightweight fallback. Per-target response_pipe FIFOs let agents stream answers
-            back as audio.</p>
+          <p class="desc">Five engines, all local: Breeze-TTS-2 (expressive neural), Pocket-TTS (Rust voice-cloning),
+            Piper (ONNX neural voices), Inflect-Micro-v2 (38 MB) and espeak-ng as the always-available fallback.
+            Per-target response_pipe FIFOs let agents stream answers back as audio.</p>
           <ul>
-            <li>~11 Piper voices + 5 Pocket-TTS cloned voices, in-app downloads</li>
+            <li>~11 Piper voices + cloned Pocket-TTS voices, downloaded in-app</li>
             <li>Configurable global stop key</li>
             <li>"SYSTEM RESPONDING" speaking-pill overlay</li>
           </ul>
@@ -807,10 +921,14 @@
   <section class="section section-bordered" id="hardware">
     <div class="shell">
       <span class="eyebrow fade-up">// hardware</span>
-      <h2 class="h-section fade-up">Auto-detect your GPU. Pick the right backend.</h2>
+      <h2 class="h-section fade-up">One toggle. The right compute path.</h2>
       <p class="lead fade-up" style="margin-bottom: 28px;">
-        On startup voxctrl probes nvidia-smi, /dev/nvidia0, and vulkaninfo to select the fastest
-        Whisper engine for your hardware. Override anytime in Settings → Engine.
+        whisper.cpp ships with <code
+          style="font-family:var(--mono);color:var(--cyan-1);background:rgba(34,212,239,.06);padding:2px 7px;border-radius:5px;">device
+          = "auto"</code>, which hands the work to whatever GPU path the build has — CUDA in a CUDA build, Vulkan in the
+        standard one — and falls back to CPU. The setup wizard puts that behind a single GPU-offloading switch; Settings →
+        Engine lets you pin <span class="mono">cuda</span>, <span class="mono">vulkan</span> or <span
+          class="mono">cpu</span> outright.
       </p>
 
       <div class="tbl-wrap fade-up">
@@ -890,9 +1008,8 @@
       <span class="eyebrow fade-up">// backends</span>
       <h2 class="h-section fade-up">Two engines. One voice layer.</h2>
       <p class="lead fade-up" style="margin-bottom: 36px;">
-        whisper.cpp handles most hardware. Moonshine shines on edge devices and streaming. voxctrl selects
-        automatically
-        — or you can lock one in Settings → Engine.
+        whisper.cpp handles most hardware and is the default. Moonshine holds its accuracy in noisy rooms and stays
+        fast on any CPU. The setup wizard asks you to pick one on first launch; Settings → Engine switches at any time.
       </p>
 
       <div class="cards cards-3 fade-up" style="grid-template-columns: 1fr 1fr;">
@@ -902,15 +1019,15 @@
           <span class="glyph" style="font-size:22px;">⬡</span>
           <h3 class="h-card">whisper.cpp</h3>
           <p class="desc">C++ Whisper port with GGUF model support. Runs on CUDA (NVIDIA), Vulkan (AMD/Intel), and CPU.
-            The default engine — selected automatically at startup by GPU probe.</p>
+            The default engine, and the one that scales furthest on accuracy.</p>
           <ul>
             <li>CUDA fp16 on NVIDIA, Vulkan on AMD/Intel</li>
-            <li>CPU int8 fallback, no extra setup</li>
+            <li>CPU fallback, no extra setup</li>
             <li>Models: tiny → large-v3-turbo (GGUF)</li>
-            <li>Default model: large-v3</li>
+            <li>Default model: tiny · the wizard offers five sizes</li>
           </ul>
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
-            <span style="font-family:var(--mono);font-size:11px;color:var(--txt-2);">Best accuracy (large-v3)</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--txt-2);">Best accuracy · large-v3</span>
             <div style="font-family:var(--mono);font-size:13px;color:var(--cyan-1);margin-top:4px;">~3.1 GB model · 1.5B
               params</div>
           </div>
@@ -964,9 +1081,9 @@
               <td class="mono" style="color:var(--gold-1);">ONNX (.ort)</td>
             </tr>
             <tr>
-              <td><b>Edge / RPi</b></td>
-              <td class="mono muted">impractical</td>
-              <td class="mono" style="color:var(--gold-1);">excellent ✓</td>
+              <td><b>Noisy rooms</b></td>
+              <td class="mono muted">accuracy drops</td>
+              <td class="mono" style="color:var(--gold-1);">holds up ✓</td>
             </tr>
             <tr>
               <td><b>Model sizes</b></td>
@@ -975,7 +1092,7 @@
             </tr>
             <tr>
               <td><b>Default model</b></td>
-              <td class="mono">large-v3</td>
+              <td class="mono">tiny</td>
               <td class="mono" style="color:var(--gold-1);">base</td>
             </tr>
           </tbody>
@@ -1020,6 +1137,7 @@
           <h6>Product</h6>
           <a href="/voxctrl/">Overview</a>
           <a href="/voxctrl/docs/quickstart.html">Quickstart</a>
+          <a href="/voxctrl/#setup">First-run setup</a>
           <a href="/voxctrl/docs/mcp.html">MCP server</a>
           <a href="/voxctrl/#hardware">Hardware</a>
           <a href="/voxctrl/#backends">Backends</a>
@@ -1027,8 +1145,8 @@
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -1042,7 +1160,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

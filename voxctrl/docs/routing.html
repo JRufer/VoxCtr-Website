@@ -32,10 +32,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -53,13 +54,14 @@
         <span class="h">Getting started</span>
         <a class="item" href="/voxctrl/docs/quickstart.html"><span class="glyph">&#x2303;</span> Quickstart</a>
         <a class="item" href="/voxctrl/docs/install.html"><span class="glyph">&#x229E;</span> Installation</a>
+        <a class="item" href="/voxctrl/docs/setup.html"><span class="glyph">&#x2726;</span> Setup wizard</a>
         <a class="item" href="/voxctrl/docs/concepts.html"><span class="glyph">&#x25C7;</span> Core concepts</a>
       </div>
       <div class="group">
         <span class="h">Input &amp; routing</span>
         <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
         <a class="item is-active" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
-          targets</a>
+          commands</a>
         <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
         <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
       </div>
@@ -83,10 +85,12 @@
 
     <main class="docs-content" id="docsContent">
       <div class="crumbs">INPUT &amp; ROUTING <span>/</span> ROUTING</div>
-      <h1>Routing &amp; targets</h1>
-      <p class="lede">Targets are named output destinations. Bindings tell voxctrl which target each hotkey should
-        route
-        to.</p>
+      <h1>Routing &amp; Output Commands</h1>
+      <p class="lede">Output Commands are named output destinations. Bindings tell voxctrl which one each hotkey should
+        route to — and since v0.4.0 you can also call one by name in the middle of a dictation.</p>
+      <div class="note"><span class="icon">ⓘ</span> These were called Output Targets before v0.4.0. Only the UI wording
+        changed: <code>targets.toml</code> and its <code>[[target]]</code> blocks keep their names on disk, so an
+        existing config needs no edits.</div>
 
       <h2>Delivery types</h2>
       <table class="docs-table">
@@ -154,8 +158,42 @@
             <td>Local TTS playback, no MCP/server required</td>
             <td>Hands-free voice replies</td>
           </tr>
+          <tr>
+            <td>chat</td>
+            <td>POSTs to an OpenAI-compatible <code>/v1/chat/completions</code>, carrying prior turns as context, and
+              reads the reply back</td>
+            <td>Talking to a local LLM hands-free — Ollama, llama.cpp, LM Studio</td>
+          </tr>
+          <tr>
+            <td>command</td>
+            <td>Inspects the transcript for a spoken command name and reroutes it</td>
+            <td>The Voice Command Router, below</td>
+          </tr>
         </tbody>
       </table>
+
+      <h2>Saying a command by name</h2>
+      <p>A target with <code>delivery = "command"</code> turns your voice into the router. Start dictation and say
+        <em>"VoxCtrl"</em>, then the command's name, then what you want to send:</p>
+      <pre class="code-inline">"VoxCtrl notes, remember to call the plumber"
+   → routes "remember to call the plumber" to the command named notes</pre>
+      <ul>
+        <li><strong>Trigger phrase</strong> — <code>"VoxCtrl"</code>, <code>"voxctrl"</code> or <code>"vox ctrl"</code>.
+        </li>
+        <li><strong>Natural lead-ins work</strong> — <em>"VoxCtrl, add this to my personal notes: …"</em>,
+          <em>"VoxCtrl put this in Notes: hello"</em>, <em>"VoxCtrl send this to my notes. …"</em>.</li>
+        <li><strong>Name resolution</strong> — spoken names are matched against every configured command id and label,
+          with longer multi-word names winning first, so <em>"Personal Notes"</em> is matched before <em>"Notes"</em>.
+        </li>
+        <li><strong>Confirmation</strong> — a glassmorphism HUD pill (<code>⚡ NOTES ▸ remember to call the …</code>)
+          shows the command and a summary of the payload. Duration and on/off live in Settings → Visual.</li>
+        <li><strong>Fallback</strong> — say nothing of the sort and dictation goes wherever your hotkey already points.
+        </li>
+      </ul>
+      <pre class="code-inline">[[target]]
+id       = "cmd_router"
+label    = "Voice Command Router"
+delivery = "command"</pre>
 
       <h2>Per-target processing</h2>
       <p>Each target's <code>[target.processing]</code> block can override the global post-processing settings.
@@ -211,7 +249,8 @@
       <h2>Config file locations</h2>
       <ul>
         <li><code>~/.config/voxctrl/config.json</code> — global settings (managed by Settings UI)</li>
-        <li><code>~/.config/voxctrl/targets.toml</code> — output target definitions</li>
+        <li><code>~/.config/voxctrl/targets.toml</code> — Output Command definitions (the filename and its
+          <code>[[target]]</code> blocks are unchanged from earlier versions)</li>
         <li><code>~/.config/voxctrl/bindings.toml</code> — hotkey → target bindings</li>
       </ul>
       <div class="note"><span class="icon">ⓘ</span> All three config files are hot-reloaded on save — no restart
@@ -249,8 +288,8 @@
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -264,7 +303,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>

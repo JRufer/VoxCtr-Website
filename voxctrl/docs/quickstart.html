@@ -32,10 +32,11 @@
     <a class="nav-brand" href="/voxctrl/">
       <img src="/voxctrl/assets/voxctrl.gif" alt="voxctrl" />
       <span>vox<span class="v">ctr</span></span>
-      <span class="nav-version">v0.2.7</span>
+      <span class="nav-version">v0.4.0</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="/voxctrl/">Overview</a>
+      <a class="nav-link" href="/voxctrl/#setup">First run</a>
       <a class="nav-link is-active" href="/voxctrl/docs/quickstart.html">Documentation</a>
     </div>
     <div class="nav-spacer"></div>
@@ -54,13 +55,14 @@
         <a class="item is-active" href="/voxctrl/docs/quickstart.html"><span class="glyph">&#x2303;</span>
           Quickstart</a>
         <a class="item" href="/voxctrl/docs/install.html"><span class="glyph">&#x229E;</span> Installation</a>
+        <a class="item" href="/voxctrl/docs/setup.html"><span class="glyph">&#x2726;</span> Setup wizard</a>
         <a class="item" href="/voxctrl/docs/concepts.html"><span class="glyph">&#x25C7;</span> Core concepts</a>
       </div>
       <div class="group">
         <span class="h">Input &amp; routing</span>
         <a class="item" href="/voxctrl/docs/hotkeys.html"><span class="glyph">&#x2341;</span> Hotkeys</a>
         <a class="item" href="/voxctrl/docs/routing.html"><span class="glyph">&#x22B3;</span> Routing &amp;
-          targets</a>
+          commands</a>
         <a class="item" href="/voxctrl/docs/atspi.html"><span class="glyph">&#x2237;</span> AT-SPI2</a>
         <a class="item" href="/voxctrl/docs/codemode.html"><span class="glyph">&#x27E8;/&#x27E9;</span> Code mode</a>
       </div>
@@ -85,56 +87,69 @@
     <main class="docs-content" id="docsContent">
       <div class="crumbs">GETTING STARTED <span>/</span> QUICKSTART</div>
       <h1>Quickstart</h1>
-      <p class="lede">From zero to your first voice transcription in under five minutes. Runs on Linux (Wayland + X11)
-        and Windows 10/11.</p>
+      <p class="lede">From zero to your first voice transcription in under five minutes. Since v0.4.0 a first-run
+        wizard does most of this for you. Runs on Linux (Wayland + X11) and Windows 10/11.</p>
 
       <h2>1. Install</h2>
       <p><strong>Linux:</strong> Download the AppImage from <a href="https://github.com/jrufer/voxctrl/releases"
           target="_blank">GitHub Releases</a>, make it executable, and run it:</p>
       <pre class="code-inline">chmod +x VoxCtrl.AppImage
 ./VoxCtrl-x86_64.AppImage</pre>
-      <p>To set up desktop integration and hardware permissions (udev rules, input group, desktop shortcut), run the
-        built-in installer:</p>
+      <p>That is the whole installation. voxctrl registers its own <code>.desktop</code> entry and icon under
+        <code>~/.local/share/</code> on every Linux launch — no privileges, no install step, and nothing to undo later.
+      </p>
+      <p>The only thing that can need a package manager is the helper that types text into other windows
+        (<code>wtype</code> on Wayland, <code>xdotool</code> on X11). If it is missing, voxctrl says so and offers to
+        install it. You can also do that step up front, which installs those packages and nothing else:</p>
       <pre class="code-inline">./VoxCtrl-x86_64.AppImage --install</pre>
-      <p>You can also launch the AppImage normally — if hardware permissions are missing, a diagnostics window appears
-        automatically with a one-click <strong>Setup System Integration</strong> button that prompts for your password
-        via <code>pkexec</code>.</p>
       <p><strong>Windows:</strong> Download the installer from GitHub Releases and run it. WebView2
         is
         pre-installed on Windows 11; on Windows 10 it auto-downloads on first run.</p>
 
       <h2>2. Permissions (Linux)</h2>
-      <p>Global hotkeys require evdev access. The built-in installer adds you to the <code>input</code> group. <strong>Log
-          out and back in</strong> (or reboot) for the group change to take effect. On Windows, no special permissions
-        are required — hotkeys use Win32 hooks.</p>
+      <p>None. Global shortcuts are registered with your desktop through the XDG <code>GlobalShortcuts</code> portal, so
+        your desktop owns the key grab and tells voxctrl exactly one thing: that its own shortcut fired. There is no
+        udev rule, no <code>input</code> group, no logout and no reboot. On Windows, hotkeys use Win32 hooks and also
+        need nothing granted.</p>
+      <div class="note"><span class="icon">ⓘ</span> Versions before v0.3.3 installed a udev rule that let every program
+        running as your user read every keystroke on your system. The installer now <strong>removes</strong> that rule
+        if it finds it, and never creates it. See <a href="hotkeys.html">Hotkeys</a>.</div>
 
-      <h2>3. Download a model</h2>
-      <p>On first launch, voxctrl opens the Settings window. Go to <strong>Settings → Engine</strong> and download a
-        Whisper model. Recommendations:</p>
+      <h2>3. Run the setup wizard</h2>
+      <p>On a machine with no config, voxctrl opens a seven-step wizard instead of the settings window: engine and model
+        size, hotkey gesture and binding, overlay, a live dictation test, and an optional voice. It downloads the model
+        you pick before letting you continue, and writes each choice to disk as you make it — quitting halfway keeps
+        what you picked.</p>
+      <p>Model sizes on offer for whisper.cpp, largest to smallest:</p>
       <ul>
+        <li><code>large-v3</code> (~3.1 GB) — maximum accuracy, wants a GPU or patience</li>
+        <li><code>medium</code> (~1.5 GB) — close behind, still heavy</li>
         <li><code>small</code> (~466 MB) — good speed/accuracy balance for most hardware</li>
-        <li><code>large-v3</code> (~3 GB, default) — maximum accuracy, requires GPU or patience</li>
-        <li><code>large-v3-turbo</code> (~1.6 GB) — near large-v3 quality at medium speed</li>
-        <li><code>tiny</code> (~75 MB) — fastest, suitable for quick testing or weak hardware</li>
+        <li><code>base</code> (~142 MB) — quick, usable for clear speech</li>
+        <li><code>tiny</code> (~75 MB, default) — fastest, weak hardware and quick testing</li>
       </ul>
-      <p>Models are stored in <code>~/.local/share/voxctrl/models/</code>. The default inference backend is
-        whisper.cpp, automatically selecting CUDA (NVIDIA, requires a CUDA-enabled build), Vulkan (AMD/Intel/NVIDIA),
-        or CPU at startup. A Moonshine backend is also available — switch via Settings → Engine.</p>
+      <p>Moonshine ships two sizes, <code>tiny</code> (~100 MB) and <code>base</code> (~250 MB), and keeps more of its
+        accuracy in a noisy room. Models are stored in <code>~/.local/share/voxctrl/models/</code>. Run the wizard again
+        at any time with <code>voxctrl --setup</code>, or Settings → General → <strong>Open setup wizard</strong>. Full
+        walkthrough: <a href="setup.html">Setup wizard</a>.</p>
 
       <h2>4. Speak</h2>
-      <p>Click into any text field. Hold <code>Super+Space</code>. Speak. Release. Your transcript appears.</p>
-      <div class="note"><span class="icon">ⓘ</span> If a model isn't downloaded yet, voxctrl automatically switches to
-        the Engine tab on startup and shows a warning prompting you to pick and download one.</div>
+      <p>Click into any text field. Trigger the binding you made in step 3 — <code>Ctrl+Space</code> held down, if you
+        took the wizard's suggestion. Speak. Release. Your transcript appears.</p>
+      <div class="note"><span class="icon">ⓘ</span> If shortcuts cannot reach voxctrl, it says so in the tray and in a
+        notification rather than silently ignoring your keypress, and starts working the moment that changes — without
+        an app restart.</div>
 
       <h2>Next</h2>
       <ul>
         <li>Wire up the <strong>MCP server</strong> for Claude Desktop / Cursor integration — Settings → Engine → MCP
           Server</li>
-        <li>Define <strong>routing targets</strong> in <code>~/.config/voxctrl/targets.toml</code> — 9 delivery types
-          plus a <code>speak</code> TTS target</li>
+        <li>Define <strong>Output Commands</strong> in <code>~/.config/voxctrl/targets.toml</code> — 13 delivery
+          types, and each one can be called by name mid-dictation ("VoxCtrl notes, …")</li>
         <li>Customize <strong>hotkeys</strong> in <code>~/.config/voxctrl/bindings.toml</code> — hold, toggle,
-          double-tap, double-tap &amp; hold, or chord gestures</li>
-        <li>Enable <strong>TTS</strong> — Settings → TTS → pick a Piper or Pocket-TTS voice → Download</li>
+          double-tap or double-tap &amp; hold gestures</li>
+        <li>Enable <strong>TTS</strong> — Settings → TTS → pick a Breeze-TTS-2, Pocket-TTS, Piper, Inflect-Micro or
+          eSpeak-NG voice → Download</li>
       </ul>
 
       <div class="docs-foot">
@@ -169,8 +184,8 @@
         <div>
           <h6>Docs</h6>
           <a href="/voxctrl/docs/install.html">Installation</a>
+          <a href="/voxctrl/docs/setup.html">Setup wizard</a>
           <a href="/voxctrl/docs/routing.html">Routing</a>
-          <a href="/voxctrl/docs/atspi.html">AT-SPI2</a>
           <a href="/voxctrl/docs/overlays.html">Overlays</a>
         </div>
         <div>
@@ -184,7 +199,7 @@
       <div class="foot-bottom">
         <div class="left">
           <img src="/voxctrl/assets/favicon.png" alt="" />
-          <span>voxctrl &middot; v0.2.7 &middot; linux &amp; windows</span>
+          <span>voxctrl &middot; v0.4.0 &middot; linux &amp; windows</span>
         </div>
         <div>&#x2C6C; wayland-native &nbsp;&middot;&nbsp; &#x25EF; x11-compat &nbsp;&middot;&nbsp; &lowast; on-device
           only</div>
