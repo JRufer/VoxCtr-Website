@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.5.0] - 2026-09-06
+
+Merge pull request #87 from JRufer/claude/voxctrl-memory-usage-increase-fe297f
+Say which engine this build can put on the GPU, and stop one bad config value taking the rest
+
+---
+
 ## [v0.4.0] - 2026-09-04
 
 Merge pull request #80: v0.4.0 — first-run wizard, self-updating, Output Commands
